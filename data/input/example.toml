@@ -1,0 +1,47 @@
+# details on TOML format can be found here: https://toml.io/en/
+[citation]
+doi = "10.1000/182"
+url = "https://www.doi.org/hb.html"
+biblatex = '''
+@online{knuthwebsite,
+    author    = "Donald Knuth",
+    title     = "Knuth: Computers and Typesetting",
+    url       = "http://www-cs-faculty.stanford.edu/~uno/abcde.html",
+    keywords  = "latex,knuth"
+}
+'''
+
+[project]
+server_url = "https://url.to/my/instance"
+project_id = 1
+units = "nm"
+# any necessary authentication should be passed with environment variables
+
+[annotations]
+annotated = []
+names = []  # null to include all
+rename = {}
+
+[skeletons]
+annotated = []
+names = []  # null to include all
+rename = {}
+# connectors where the partner is in this dataset
+internal_connectors = true
+# connectors where the partner is not in this dataset
+external_connectors = true
+
+[skeletons.tags]
+names = []  # null to include all
+rename = {}
+
+[volumes]
+annotated = []
+names = []  # null to include all
+rename = {}
+
+[landmarks]
+groups = []
+group_rename = {}
+names = []
+rename = {}

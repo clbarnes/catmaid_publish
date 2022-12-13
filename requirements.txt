@@ -1,5 +1,11 @@
 # Requirements should go here, ABOVE the "#extra: dev" line
 
+navis
+python-catmaid
+meshio
+pydantic
+tomli; python_version < '3.11'
+
 #extra: dev
 
 black
