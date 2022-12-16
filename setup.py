@@ -18,16 +18,14 @@ setup(
     long_description=readme,
     long_description_content_type="text/markdown",
     package_dir={"": "src"},
-    packages=find_packages(
-        where="src",
-        include=["catmaid_publish*"]
-    ),
+    packages=find_packages(where="src", include=["catmaid_publish*"]),
     install_requires=install_requires,
     extras_require=extras_require,
     python_requires=">=3.9, <4.0",
     classifiers=[
         "Programming Language :: Python :: 3",
     ],
+    entry_points={"console_scripts": ["catmaid_publish=catmaid_publish.main:_main"]},
     use_scm_version=True,
     setup_requires=["setuptools_scm"],
 )

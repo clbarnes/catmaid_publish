@@ -26,17 +26,13 @@ rename = {}
 annotated = []
 names = []  # null to include all
 rename = {}
-# connectors where the partner is in this dataset
-internal_connectors = true
-# connectors where the partner is not in this dataset
-external_connectors = true
 
 [skeletons.tags]
 names = []  # null to include all
 rename = {}
 
 [volumes]
-annotated = []
+# annotated = []
 names = []  # null to include all
 rename = {}
 

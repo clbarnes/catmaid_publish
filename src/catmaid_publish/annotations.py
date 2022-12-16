@@ -1,23 +1,49 @@
+import json
 from typing import Optional
 import pymaid
 import networkx as nx
+from pathlib import Path
 
 from .utils import fill_in_dict
 
 
-def descendants(g: nx.DiGraph, roots: list[str]):
+def descendants(g: nx.DiGraph, roots: list[str], max_depth=None):
+    """Find all descendant nodes from given roots, to a given depth."""
     out = set()
-    to_visit = list(roots)
+    to_visit: list[tuple[str, int]] = [(r, 0) for r in roots]
     while to_visit:
-        n = to_visit.pop()
-        if n in out:
+        node, depth = to_visit.pop()
+        if node in out:
             continue
-        out.add(n)
-        to_visit.extend(g.successors(n))
+        out.add(node)
+        if max_depth is not None and depth >= max_depth:
+            continue
+        to_visit.extend((n, depth + 1) for n in g.successors(node))
     return out
 
 
-def get_annotations(annotated: list[str], names: Optional[list[str]], rename: dict[str, str]) -> tuple[list[tuple[str, list[str]]], dict[str, str]]:
+def get_annotations(
+    annotated: list[str], names: Optional[list[str]], rename: dict[str, str]
+) -> tuple[dict[str, list[str]], dict[str, str]]:
+    """Get annotations of interest and how they relate to each other.
+
+    Parameters
+    ----------
+    annotated : list[str]
+        Include all descendant annotations of these meta-annotations.
+    names : Optional[list[str]]
+        Include annotations with any of these names.
+        If None, include all annotations in the project.
+    rename : dict[str, str]
+        Rename these annotations.
+
+    Returns
+    -------
+    tuple[dict[str, list[str]], dict[str, str]]
+        2-tuple:
+        First element is a dict of a (renamed) annotation to its (renamed) sub-annotations.
+        Second element is the complete dict of renames ``{old: new}``.
+    """
     g = pymaid.get_annotation_graph()
     skels = {n for n, d in g.nodes(data=True) if d.get("is_skeleton")}
     g.remove_nodes_from(skels)
@@ -32,6 +58,36 @@ def get_annotations(annotated: list[str], names: Optional[list[str]], rename: di
     sub = g.subgraph(list(rename))
     out = dict()
     for n in sorted(rename, key=rename.get):
-        out[rename[n]] = sorted(rename[s] for s in g.successors(n))
+        out[rename[n]] = sorted(rename[s] for s in sub.successors(n))
 
     return out, rename
+
+
+def write_annotation_graph(fpath: Path, annotations: dict[str, list[str]]):
+    """Write annotation graph as JSON ``{parent: children}``.
+
+    Parameters
+    ----------
+    fpath : Path
+        Path to write to. Ancestor directories will be created.
+    annotations : dict[str, list[str]]
+        Parent-children annotation relationships.
+    """
+    fpath.parent.mkdir(exist_ok=True, parents=True)
+    with open(fpath, "w") as f:
+        json.dump(annotations, f, indent=2, sort_keys=True)
+
+
+README = """
+# Annotations
+
+Annotations are text labels applied to neurons and to other annotations.
+
+## Files
+
+### `annotations.json`
+
+A JSON file of annotations and how they annotate each other.
+Every annotation of interest is a key in the JSON object:
+the value is the list of annotations of interest annotated by that key.
+""".lstrip()
