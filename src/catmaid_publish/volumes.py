@@ -1,8 +1,10 @@
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
 import meshio
 import navis
+import pandas as pd
 import pymaid
 
 from .utils import fill_in_dict
@@ -42,6 +44,55 @@ def write_volumes(dpath: Path, volumes: dict[str, tuple[int, meshio.Mesh]]):
             fname = str(vol_id) + ".stl"
             f.write(f"{fname}\t{name}\n")
             mesh.write(dpath / fname)
+
+
+def df_to_dict(df: pd.DataFrame, keys, values):
+    return dict(zip(df[keys], df[values]))
+
+
+class VolumeReader:
+    def __init__(self, dpath: Path) -> None:
+        self.dpath = dpath
+        self._names_df = None
+
+    @property
+    def names_df(self):
+        if self._names_df is None:
+            self._names_df = pd.read_csv(
+                self.dpath / "names.tsv",
+                sep="\t",
+            )
+        return self._names_df
+
+    @lru_cache
+    def _dict(self, keys, values):
+        return df_to_dict(self.names_df, keys, values)
+
+    def _read_vol(self, fpath: Path, name: Optional[str], volume_id: Optional[int]):
+        vol = navis.Volume.from_file(fpath)
+        if name is not None:
+            d = self._dict("filename", "volume_name")
+            name = d[fpath.name]
+        vol.name = name
+
+        if volume_id is None:
+            volume_id = int(fpath.stem)
+
+        vol.id = volume_id
+        return vol
+
+    def get_by_id(self, volume_id: int) -> navis.Volume:
+        return self._read_vol(
+            self.dpath / f"{volume_id}.stl",
+            None,
+            volume_id,
+        )
+
+    def get_by_name(self, volume_name: str) -> navis.Volume:
+        d = self._dict("volume_name", "filename")
+        fname = d[volume_name]
+        path = self.dpath / fname
+        return self._read_vol(path, volume_name, None)
 
 
 README = """

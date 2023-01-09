@@ -1,9 +1,11 @@
 import json
 from collections import defaultdict
 from collections.abc import Iterable
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Optional
 
+import navis
 import numpy as np
 import pandas as pd
 import pymaid
@@ -140,6 +142,80 @@ def write_skeleton(dpath: Path, nrn: pymaid.CatmaidNeuron, meta: dict[str, Any])
     conns = nrn.connectors.sort_values("node_id", inplace=False)
     conns.rename(columns={"type": "is_input"}, inplace=True)
     conns.to_csv(dpath / "connectors.tsv", sep="\t", index=False)
+
+
+class SkeletonReader:
+    def __init__(self, dpath: Path) -> None:
+        self.dpath = dpath
+
+    @lru_cache
+    def _read_meta(self, dpath):
+        return json.loads((dpath / "metadata.json").read_text())
+
+    def _read_nodes(self, dpath):
+        return pd.read_csv(dpath / "nodes.tsv", sep="\t")
+
+    @lru_cache
+    def _read_tags(self, dpath):
+        return json.loads((dpath / "tags.json").read_text())
+
+    def _read_connectors(self, dpath):
+        conns = pd.read_csv(dpath / "connectors.tsv", sep="\t")
+        conns.rename(columns={"is_input": "type"}, inplace=True)
+        return conns
+
+    def _read_neuron(self, dpath) -> navis.TreeNeuron:
+        meta = self._read_meta(dpath)
+        nodes = self._read_nodes(dpath)
+
+        nrn = navis.TreeNeuron(nodes)
+        nrn.id = meta["id"]
+        nrn.name = meta["name"]
+        nrn.soma = meta["soma_id"]
+
+        nrn.tags = self._read_tags(dpath)
+
+        nrn.connectors = self._read_connectors(dpath)
+
+        return nrn
+
+    def get_by_id(self, skeleton_id):
+        return self._read_neuron(self.dpath / str(skeleton_id))
+
+    def _iter_dirs(self):
+        for path in self.dpath.iterdir():
+            if path.is_dir():
+                yield path
+
+    @lru_cache
+    def name_to_id(self) -> dict[str, int]:
+        out = dict()
+
+        for dpath in self._iter_dirs():
+            meta = self._read_meta(dpath)
+            out[meta["name"]] = meta["id"]
+
+        return out
+
+    @lru_cache
+    def annotation_to_ids(self) -> dict[str, list[int]]:
+        out: dict[str, list[int]] = dict()
+
+        for dpath in self._iter_dirs():
+            meta = self._read_meta(dpath)
+            for ann in meta["annotations"]:
+                out.setdefault(ann, []).append(meta["id"])
+
+        return out
+
+    def get_by_name(self, name: str) -> navis.TreeNeuron:
+        d = self.name_to_id()
+        return self.get_by_id(d[name])
+
+    def get_by_annotation(self, annotation: str) -> Iterable[navis.TreeNeuron]:
+        d = self.annotation_to_ids()
+        for skid in d[annotation]:
+            yield self.get_by_id(skid)
 
 
 README = """

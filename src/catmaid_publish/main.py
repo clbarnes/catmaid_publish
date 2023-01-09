@@ -4,7 +4,9 @@ import sys
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Any, Optional
+from zoneinfo import ZoneInfo
 
+import tomli_w
 from tqdm import tqdm
 
 from . import __version__
@@ -155,7 +157,7 @@ def citation_readme(config: dict):
 def publish_from_config(
     config_path: Path, out_dir: Path, creds_json: Optional[Path] = None
 ):
-    timestamp = dt.datetime.utcnow().strftime("%Y-%m-%d %H:%MZ")
+    timestamp = dt.datetime.utcnow().replace(tzinfo=ZoneInfo("UTC"))
     out_dir.mkdir(parents=True)
     config = read_toml(config_path)
     config_hash = hash_toml(config_path)
@@ -176,34 +178,46 @@ def publish_from_config(
     )
 
     with tqdm(total=4) as pbar:
-        has_landmarks = publish_landmarks(config, out_dir, pbar)
-        has_volumes = publish_volumes(config, out_dir, pbar)
-        has_anns, ann_renames = publish_annotations(config, out_dir, pbar)
-        has_skels = publish_skeletons(config, out_dir, ann_renames, pbar)
+        _ = publish_landmarks(config, out_dir, pbar)
+        _ = publish_volumes(config, out_dir, pbar)
+        _, ann_renames = publish_annotations(config, out_dir, pbar)
+        _ = publish_skeletons(config, out_dir, ann_renames, pbar)
 
-    readme_lines = [
-        "# README",
-        "",
-        f"This dataset was generated using `catmaid_publish v{__version__}`at `{timestamp}` from a config file with content hash `{config_hash}`.",
-        citation_readme(config),
-        "",
-        "Data and additional information can be found in the following directories:",
-        "",
-    ]
+    meta = {
+        "timestamp": timestamp,
+        "units": project["units"],
+        "config_hash": config_hash,
+        "export_package": {
+            "name": "catmaid_publish",
+            "url": "https://github.com/clbarnes/catmaid_publish",
+            "version": f"{__version__}",
+            "timestamp": timestamp,
+        },
+    }
 
-    if has_landmarks:
-        readme_lines.append("- `landmarks`")
-    if has_volumes:
-        readme_lines.append("- `volumes`")
-    if has_anns:
-        readme_lines.append("- `annotations`")
-    if has_skels:
-        readme_lines.append("- `neurons`")
+    cit = config.get("citation", dict())
+    ref = dict()
 
-    readme_lines.append("")
-    readme_lines.append(f"Spatial data are in `{project['units']}`.\n")
-    readme = "\n".join(readme_lines)
-    (out_dir / "README.md").write_text(readme)
+    if url := cit.get("url", "").strip():
+        ref["url"] = url
+
+    if doi := cit.get("doi", "").strip():
+        ref["doi"] = f"https://doi.org/{doi}"
+
+    if biblatex := cit.get("biblatex", "").strip():
+        multiline_strings = True
+        ref["biblatex"] = biblatex
+    else:
+        multiline_strings = False
+
+    if ref:
+        meta["reference"] = ref
+
+    with open(out_dir / "metadata.toml", "wb") as f:
+        tomli_w.dump(meta, f, multiline_strings=multiline_strings)
+
+    with open(out_dir / "README.md", "w") as f:
+        f.write(README)
 
 
 def _main(args=None):
@@ -223,6 +237,24 @@ def _main(args=None):
     parsed = parser.parse_args(args)
 
     publish_from_config(parsed.config, parsed.out, parsed.credentials)
+
+
+README = """
+# README
+
+This directory contains neuronal data exported from [CATMAID](https://catmaid.org) using the [`catmaid_publish`](https://github.com/clbarnes/catmaid_publish) python package.
+
+See further READMEs in subdirectories for how to interpret the data.
+The `catmaid_publish` package also includes a utility, `DataReader`,
+to convert these files into common formats for analysis with python:
+
+- [`navis.TreeNeuron`](https://navis.readthedocs.io/en/stable/source/generated/navis.TreeNeuron.html) for neuronal data
+- [`navis.Volume`](https://navis.readthedocs.io/en/stable/source/tutorials/generated/navis.Volume.html#navis.Volume) for volumetric data
+- [`networkx.DiGraph`](https://networkx.org/documentation/stable/reference/classes/digraph.html) for graph data
+
+See also `metadata.toml` for further information about the data,
+referencing, and the export itself.
+""".lstrip()
 
 
 if __name__ == "__main__":

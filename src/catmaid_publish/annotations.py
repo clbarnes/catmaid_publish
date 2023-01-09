@@ -42,7 +42,8 @@ def get_annotations(
     -------
     tuple[dict[str, list[str]], dict[str, str]]
         2-tuple:
-        First element is a dict of a (renamed) annotation to its (renamed) sub-annotations.
+        First element is a dict of a (renamed) annotation
+        to its (renamed) sub-annotations.
         Second element is the complete dict of renames ``{old: new}``.
     """
     g = pymaid.get_annotation_graph()
@@ -77,6 +78,37 @@ def write_annotation_graph(fpath: Path, annotations: dict[str, list[str]]):
     fpath.parent.mkdir(exist_ok=True, parents=True)
     with open(fpath, "w") as f:
         json.dump(annotations, f, indent=2, sort_keys=True)
+
+
+def read_annotation_graph(fpath):
+    with open(fpath) as f:
+        d = json.load(f)
+
+    g = nx.DiGraph()
+    for u, vs in d.items():
+        for v in vs:
+            g.add_edge(u, v)
+
+    return g
+
+
+class AnnotationReader:
+    def __init__(self, dpath: Path) -> None:
+        self.dpath = dpath
+
+    def get_graph(self):
+        with open(self.dpath / "annotation_graph.json") as f:
+            d = json.load(f)
+
+        g = nx.DiGraph()
+        for u, vs in d.items():
+            for v in vs:
+                g.add_edge(u, v, meta_annotation=True)
+
+        for _, d in g.nodes(data=True):
+            d["type"] = "annotation"
+
+        return g
 
 
 README = """

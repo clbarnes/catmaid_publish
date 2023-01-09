@@ -1,35 +1,15 @@
+from __future__ import annotations
+
 import json
 from dataclasses import asdict, dataclass, field
+from functools import lru_cache
 from pathlib import Path
-from typing import Any, NamedTuple, Optional
+from typing import Any, Iterable, Optional
 
 import pandas as pd
 import pymaid
 
 from .utils import fill_in_dict
-
-
-def map_col(col, mapper: dict):
-    return [mapper[item] for item in col]
-
-
-# group_members[group_name, list[lmark_name]]
-# group_locations[group_name, list[location_id]]
-# landmark_locations[landmark_name, list[location_id]]
-# locations[id, x, y, z]
-class LandmarkInfo(NamedTuple):
-    landmark_locations: dict[str, list[int]]
-    locations: dict[int, tuple[float, float, float]]
-    group_landmarks: dict[str, list[str]]
-    group_locations: dict[str, list[int]]
-
-    def is_empty(self):
-        return all(len(item) == 0 for item in self)
-
-
-class LocationSet:
-    def __init__(self) -> None:
-        self.data = dict()
 
 
 def get_landmarks(
@@ -115,8 +95,8 @@ class Location:
         return d
 
     @classmethod
-    def from_jso(cls, jso: dict[str, Any]):
-        cls(
+    def from_jso(cls, jso: dict[str, Any]) -> Location:
+        return cls(
             tuple(jso["xyz"]),
             set(jso["groups"]),
             set(jso["landmarks"]),
@@ -140,6 +120,22 @@ def write_landmarks(fpath: Path, landmarks: pd.DataFrame, groups: pd.DataFrame):
 
     with open(fpath, "w") as f:
         json.dump(out, f, indent=2, sort_keys=True)
+
+
+class LandmarkReader:
+    def __init__(self, dpath: Path) -> None:
+        self.dpath = dpath
+        self.fpath = dpath / "locations.json"
+
+    @lru_cache
+    def _landmarks(self):
+        with open(self.fpath) as f:
+            d = json.load(f)
+
+        return [Location.from_jso(loc) for loc in d]
+
+    def get_all(self) -> Iterable[Location]:
+        yield from self._landmarks()
 
 
 README = """
