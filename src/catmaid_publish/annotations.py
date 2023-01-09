@@ -96,7 +96,7 @@ class AnnotationReader:
     def __init__(self, dpath: Path) -> None:
         self.dpath = dpath
 
-    def get_graph(self):
+    def get_graph(self) -> nx.DiGraph:
         with open(self.dpath / "annotation_graph.json") as f:
             d = json.load(f)
 

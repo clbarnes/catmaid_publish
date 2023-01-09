@@ -179,7 +179,7 @@ class SkeletonReader:
 
         return nrn
 
-    def get_by_id(self, skeleton_id):
+    def get_by_id(self, skeleton_id: int) -> navis.TreeNeuron:
         return self._read_neuron(self.dpath / str(skeleton_id))
 
     def _iter_dirs(self):
@@ -216,6 +216,10 @@ class SkeletonReader:
         d = self.annotation_to_ids()
         for skid in d[annotation]:
             yield self.get_by_id(skid)
+
+    def get_all(self) -> Iterable[navis.TreeNeuron]:
+        for dpath in self._iter_dirs():
+            yield self._read_neuron(dpath)
 
 
 README = """

@@ -1,6 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, Optional
 
 import meshio
 import navis
@@ -68,7 +68,9 @@ class VolumeReader:
     def _dict(self, keys, values):
         return df_to_dict(self.names_df, keys, values)
 
-    def _read_vol(self, fpath: Path, name: Optional[str], volume_id: Optional[int]):
+    def _read_vol(
+        self, fpath: Path, name: Optional[str], volume_id: Optional[int]
+    ) -> navis.Volume:
         vol = navis.Volume.from_file(fpath)
         if name is not None:
             d = self._dict("filename", "volume_name")
@@ -93,6 +95,10 @@ class VolumeReader:
         fname = d[volume_name]
         path = self.dpath / fname
         return self._read_vol(path, volume_name, None)
+
+    def get_all(self) -> Iterable[navis.Volume]:
+        for fpath in self.dpath.glob("*.stl"):
+            yield self._read_vol(fpath, None, None)
 
 
 README = """
