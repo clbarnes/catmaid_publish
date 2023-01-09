@@ -1,7 +1,7 @@
+import json
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, NamedTuple, Optional
-import json
-from collections import defaultdict
 
 import pandas as pd
 import pymaid
@@ -101,41 +101,45 @@ def get_landmarks(
     return lmark_final, group_final
 
 
+@dataclass
+class Location:
+    xyz: tuple[float, float, float]
+    groups: set[str] = field(default_factory=set)
+    landmarks: set[str] = field(default_factory=set)
+
+    def to_jso(self) -> dict[str, Any]:
+        d = asdict(self)
+        d["xyz"] = list(d["xyz"])
+        d["groups"] = sorted(d["groups"])
+        d["landmarks"] = sorted(d["landmarks"])
+        return d
+
+    @classmethod
+    def from_jso(cls, jso: dict[str, Any]):
+        cls(
+            tuple(jso["xyz"]),
+            set(jso["groups"]),
+            set(jso["landmarks"]),
+        )
+
+
 def write_landmarks(fpath: Path, landmarks: pd.DataFrame, groups: pd.DataFrame):
     if len(landmarks) + len(groups) == 0:
         return
 
-    location_data = dict()
+    location_data: dict[int, Location] = dict()
     for row in landmarks.itertuples(index=False):
-        d = location_data.setdefault(
-            row.location_id,
-            {
-                "xyz": [row.x, row.y, row.z],
-                "groups": set(),
-                "landmarks": set(),
-            },
-        )
-        d["landmarks"].add(row.name)
+        d = location_data.setdefault(row.location_id, Location((row.x, row.y, row.z)))
+        d.landmarks.add(row.name)
 
     for row in groups.itertuples(index=False):
-        d = location_data.setdefault(
-            row.location_id,
-            {
-                "xyz": [row.x, row.y, row.z],
-                "groups": set(),
-                "landmarks": set(),
-            },
-        )
-        d["groups"].add(row.name)
+        d = location_data.setdefault(row.location_id, Location((row.x, row.y, row.z)))
+        d.groups.add(row.name)
 
-    out = []
-    for _, v in sorted(location_data.items()):
-        v["landmarks"] = sorted(v["landmarks"])
-        v["groups"] = sorted(v["groups"])
-        out.append(v)
+    out = [v.to_jso() for _, v in sorted(location_data.items())]
 
     with open(fpath, "w") as f:
-        json.dump(location_data, f, indent=2, sort_keys=True)
+        json.dump(out, f, indent=2, sort_keys=True)
 
 
 README = """

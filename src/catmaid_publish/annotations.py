@@ -1,8 +1,9 @@
 import json
-from typing import Optional
-import pymaid
-import networkx as nx
 from pathlib import Path
+from typing import Optional
+
+import networkx as nx
+import pymaid
 
 from .utils import fill_in_dict
 

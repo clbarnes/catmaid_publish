@@ -1,9 +1,9 @@
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
-import pymaid
-import navis
 import meshio
+import navis
+import pymaid
 
 from .utils import fill_in_dict
 

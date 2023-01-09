@@ -1,19 +1,28 @@
-from argparse import ArgumentParser
-from pathlib import Path
-import json
-from typing import Optional, Any
 import datetime as dt
 import logging
+import sys
+from argparse import ArgumentParser
+from pathlib import Path
+from typing import Any, Optional
 
 from tqdm import tqdm
 
 from . import __version__
+from .annotations import README as ann_readme
+from .annotations import get_annotations, write_annotation_graph
+from .io_helpers import get_catmaid_instance, hash_toml, read_toml
+from .landmarks import README as lmark_readme
+from .landmarks import get_landmarks, write_landmarks
+from .skeletons import README as skel_readme
+from .skeletons import get_skeletons, write_skeleton
 from .utils import setup_logging
-from .io_helpers import hash_toml, read_toml, get_catmaid_instance
-from .annotations import get_annotations, write_annotation_graph, README as ann_readme
-from .landmarks import get_landmarks, write_landmarks, README as lmark_readme
-from .skeletons import get_skeletons, write_skeleton, README as skel_readme
-from .volumes import get_volumes, write_volumes, README as vol_readme
+from .volumes import README as vol_readme
+from .volumes import get_volumes, write_volumes
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
 
 
 def publish_annotations(config: dict[str, Any], out_dir: Path, pbar=None):
@@ -23,7 +32,7 @@ def publish_annotations(config: dict[str, Any], out_dir: Path, pbar=None):
     ann_conf = config.get("annotations", dict())
     ann_children, ann_renames = get_annotations(
         ann_conf.get("annotated", []),
-        ann_conf.get("names", []),
+        ann_conf.get("names"),
         ann_conf.get("rename", dict()),
     )
     if ann_children:
@@ -53,9 +62,9 @@ def publish_skeletons(config, out_dir, ann_renames, pbar=None):
 
     for nrn, meta in get_skeletons(
         skel_conf.get("annotated", []),
-        skel_conf.get("names", []),
+        skel_conf.get("names"),
         skel_conf.get("rename", dict()),
-        tag_conf.get("names", []),
+        tag_conf.get("names"),
         tag_conf.get("rename", dict()),
         ann_renames,
     ):
@@ -78,7 +87,7 @@ def publish_volumes(config, out_dir, pbar=None):
 
     vol_conf = config.get("volumes", dict())
     vols, _ = get_volumes(
-        vol_conf.get("names", []),
+        vol_conf.get("names"),
         vol_conf.get("rename", dict()),
     )
 
@@ -105,7 +114,7 @@ def publish_landmarks(config, out_dir, pbar=None):
     lmarks, groups = get_landmarks(
         lmark_conf.get("groups", []),
         lmark_conf.get("group_rename", dict()),
-        lmark_conf.get("names", []),
+        lmark_conf.get("names"),
         lmark_conf.get("rename", dict()),
     )
 
@@ -151,7 +160,7 @@ def publish_from_config(
     config = read_toml(config_path)
     config_hash = hash_toml(config_path)
     if creds_json is not None:
-        creds = json.loads(creds_json.read_text())
+        creds = tomllib.loads(creds_json.read_text())
     else:
         creds = None
 
@@ -161,7 +170,7 @@ def publish_from_config(
         "project_id": project["project_id"],
     }
 
-    cm = get_catmaid_instance(
+    _ = get_catmaid_instance(
         catmaid_info,
         creds,
     )
@@ -175,10 +184,11 @@ def publish_from_config(
     readme_lines = [
         "# README",
         "",
-        f"This dataset was generated using `catmaid_publish v{__version__}`at `{timestamp}` from a config file with hash `{config_hash}`.",
+        f"This dataset was generated using `catmaid_publish v{__version__}`at `{timestamp}` from a config file with content hash `{config_hash}`.",
         citation_readme(config),
         "",
         "Data and additional information can be found in the following directories:",
+        "",
     ]
 
     if has_landmarks:
@@ -200,8 +210,15 @@ def _main(args=None):
     setup_logging(logging.INFO)
     parser = ArgumentParser("catmaid_publish")
     parser.add_argument("config", type=Path, help="Path to TOML config file.")
-    parser.add_argument("out", type=Path, help="Path to output directory. Must not exist.")
-    parser.add_argument("credentials", nargs="?", type=Path, help="Path to JSON file containing CATMAID credentials. Alternatively, use environment variables.")
+    parser.add_argument(
+        "out", type=Path, help="Path to output directory. Must not exist."
+    )
+    parser.add_argument(
+        "credentials",
+        nargs="?",
+        type=Path,
+        help="Path to TOML file containing CATMAID credentials (http_user, http_password, api_token as necessary). Alternatively, use environment variables.",
+    )
 
     parsed = parser.parse_args(args)
 

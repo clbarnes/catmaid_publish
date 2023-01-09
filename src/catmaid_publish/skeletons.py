@@ -1,13 +1,13 @@
 import json
-from typing import Any, Optional
-from collections.abc import Iterable
 from collections import defaultdict
+from collections.abc import Iterable
 from pathlib import Path
+from typing import Any, Optional
 
+import numpy as np
+import pandas as pd
 import pymaid
 from tqdm import tqdm
-import pandas as pd
-import numpy as np
 
 from .utils import fill_in_dict
 

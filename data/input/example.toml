@@ -19,21 +19,21 @@ units = "nm"
 
 [annotations]
 annotated = []
-names = []  # null to include all
+names = []  # comment out to include all
 rename = {}
 
 [skeletons]
 annotated = []
-names = []  # null to include all
+names = []  # comment out to include all
 rename = {}
 
 [skeletons.tags]
-names = []  # null to include all
+names = []  # comment out to include all
 rename = {}
 
 [volumes]
 # annotated = []
-names = []  # null to include all
+names = []  # comment out to include all
 rename = {}
 
 [landmarks]
