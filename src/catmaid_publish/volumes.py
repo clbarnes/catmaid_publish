@@ -51,12 +51,27 @@ def df_to_dict(df: pd.DataFrame, keys, values):
 
 
 class VolumeReader:
+    """Class for reading exported volume data."""
+
     def __init__(self, dpath: Path) -> None:
+        """
+        Parameters
+        ----------
+        dpath : Path
+            Path to directory in which the volume data is saved.
+        """
         self.dpath = dpath
         self._names_df = None
 
     @property
-    def names_df(self):
+    def names_df(self) -> pd.DataFrame:
+        """Dataframe representing ``names.tsv``.
+
+        Returns
+        -------
+        pd.DataFrame
+            Columns ``filename``, ``volume_name``
+        """
         if self._names_df is None:
             self._names_df = pd.read_csv(
                 self.dpath / "names.tsv",
@@ -84,6 +99,16 @@ class VolumeReader:
         return vol
 
     def get_by_id(self, volume_id: int) -> navis.Volume:
+        """Read a volume with a given (arbitrary) ID.
+
+        Parameters
+        ----------
+        volume_id : int
+
+        Returns
+        -------
+        navis.Volume
+        """
         return self._read_vol(
             self.dpath / f"{volume_id}.stl",
             None,
@@ -91,14 +116,33 @@ class VolumeReader:
         )
 
     def get_by_name(self, volume_name: str) -> navis.Volume:
+        """Read a volume with a given name.
+
+        Parameters
+        ----------
+        volume_name : str
+
+        Returns
+        -------
+        navis.Volume
+        """
         d = self._dict("volume_name", "filename")
         fname = d[volume_name]
         path = self.dpath / fname
         return self._read_vol(path, volume_name, None)
 
     def get_all(self) -> Iterable[navis.Volume]:
-        for fpath in self.dpath.glob("*.stl"):
-            yield self._read_vol(fpath, None, None)
+        """Lazily iterate through all available volumes.
+
+        Iteration is in the order used by ``names.tsv``.
+
+        Yields
+        ------
+        navis.Volume
+        """
+        for fname, name in self._dict("filename", "volume_name").items():
+            fpath = self.dpath / fname
+            yield self._read_vol(fpath, name, None)
 
 
 README = """

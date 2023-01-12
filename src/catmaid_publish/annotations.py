@@ -93,10 +93,28 @@ def read_annotation_graph(fpath):
 
 
 class AnnotationReader:
+    """Class for reading exported annotation data."""
+
     def __init__(self, dpath: Path) -> None:
+        """
+        Parameters
+        ----------
+        dpath : Path
+            Directory in which the annotation data is saved.
+        """
         self.dpath = dpath
 
     def get_graph(self) -> nx.DiGraph:
+        """Return the saved graph of text annotations.
+
+        Returns
+        -------
+        nx.DiGraph
+            Directed graph of text annotations,
+            where an edge denotes the source annotating the target.
+            All nodes have attributes ``type="annotation``;
+            all edges have attributes ``meta_annotation=True``.
+        """
         with open(self.dpath / "annotation_graph.json") as f:
             d = json.load(f)
 

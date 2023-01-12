@@ -83,11 +83,29 @@ def get_landmarks(
 
 @dataclass
 class Location:
+    """Location of importants to landmarks and groups.
+
+    Attributes
+    ----------
+    xyz : tuple[float, float, float]
+        Coordinates of location
+    groups : set[str]
+        Set of landmark groups this location belongs to.
+    landmarks : set[str]
+        Set of landmarks this location belongs to.
+    """
+
     xyz: tuple[float, float, float]
     groups: set[str] = field(default_factory=set)
     landmarks: set[str] = field(default_factory=set)
 
     def to_jso(self) -> dict[str, Any]:
+        """Convert to JSON-serialisable object.
+
+        Returns
+        -------
+        dict[str, Any]
+        """
         d = asdict(self)
         d["xyz"] = list(d["xyz"])
         d["groups"] = sorted(d["groups"])
@@ -96,6 +114,19 @@ class Location:
 
     @classmethod
     def from_jso(cls, jso: dict[str, Any]) -> Location:
+        """Instantiate from JSON-like dict.
+
+        Parameters
+        ----------
+        jso : dict[str, Any]
+            Keys ``"xyz"`` (3-length list of float),
+            ``"groups"`` (list of str),
+            ``"landmarks"`` (list of str)
+
+        Returns
+        -------
+        Location
+        """
         return cls(
             tuple(jso["xyz"]),
             set(jso["groups"]),
@@ -123,19 +154,89 @@ def write_landmarks(fpath: Path, landmarks: pd.DataFrame, groups: pd.DataFrame):
 
 
 class LandmarkReader:
+    """Class for reading exported landmark data."""
+
     def __init__(self, dpath: Path) -> None:
+        """
+        Parameters
+        ----------
+        dpath : Path
+            Directory in which landmark data is saved.
+        """
         self.dpath = dpath
         self.fpath = dpath / "locations.json"
 
     @lru_cache
-    def _landmarks(self):
+    def _locations(self):
         with open(self.fpath) as f:
             d = json.load(f)
 
         return [Location.from_jso(loc) for loc in d]
 
     def get_all(self) -> Iterable[Location]:
-        yield from self._landmarks()
+        """Lazily iterate through landmark locations.
+
+        Yields
+        ------
+        Location
+        """
+        yield from self._locations()
+
+    def get_group_names(self) -> set[str]:
+        """Return all groups with locations in the dataset.
+
+        Returns
+        -------
+        set[str]
+            Set of group names.
+        """
+        out = set()
+        for loc in self._locations():
+            out.update(loc.groups)
+        return out
+
+    def get_landmark_names(self) -> set[str]:
+        """Return all landmarks with locations in the dataset.
+
+        Returns
+        -------
+        set[str]
+            Set of landmark names.
+        """
+        out = set()
+        for loc in self._locations():
+            out.update(loc.landmarks)
+        return out
+
+    def get_group(self, *group: str) -> Iterable[Location]:
+        """Lazily iterate through all locations from any of the given groups.
+
+        Parameters
+        ----------
+        group : str
+            Group name (can give multiple as *args).
+
+        Yields
+        ------
+        Location
+        """
+        groupset = set(group)
+        for loc in self._locations():
+            if not loc.groups.isdisjoint(groupset):
+                yield loc
+
+    def get_landmark(self, *landmark: str) -> Iterable[Location]:
+        """Lazily iterate through all locations from any of the given landmarks.
+
+        Parameters
+        ----------
+        landmark : str
+            Landmark name (can give multiple as *args)
+        """
+        lmarkset = set(landmark)
+        for loc in self._locations():
+            if not loc.landmarks.isdisjoint(lmarkset):
+                yield loc
 
 
 README = """

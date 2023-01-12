@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 import navis
+import networkx as nx
 import numpy as np
 import pandas as pd
 import pymaid
@@ -145,7 +146,15 @@ def write_skeleton(dpath: Path, nrn: pymaid.CatmaidNeuron, meta: dict[str, Any])
 
 
 class SkeletonReader:
+    """Class for reading exported skeletonised neuron data."""
+
     def __init__(self, dpath: Path) -> None:
+        """
+        Parameters
+        ----------
+        dpath : Path
+            Directory in which the neuron data is saved.
+        """
         self.dpath = dpath
 
     @lru_cache
@@ -165,10 +174,10 @@ class SkeletonReader:
         return conns
 
     def _read_neuron(self, dpath) -> navis.TreeNeuron:
-        meta = self._read_meta(dpath)
         nodes = self._read_nodes(dpath)
-
         nrn = navis.TreeNeuron(nodes)
+
+        meta = self._read_meta(dpath)
         nrn.id = meta["id"]
         nrn.name = meta["name"]
         nrn.soma = meta["soma_id"]
@@ -180,6 +189,16 @@ class SkeletonReader:
         return nrn
 
     def get_by_id(self, skeleton_id: int) -> navis.TreeNeuron:
+        """Read neuron with the given ID.
+
+        Parameters
+        ----------
+        skeleton_id : int
+
+        Returns
+        -------
+        navis.TreeNeuron
+        """
         return self._read_neuron(self.dpath / str(skeleton_id))
 
     def _iter_dirs(self):
@@ -189,6 +208,12 @@ class SkeletonReader:
 
     @lru_cache
     def name_to_id(self) -> dict[str, int]:
+        """Mapping from neuron name to skeleton ID.
+
+        Returns
+        -------
+        dict[str, int]
+        """
         out = dict()
 
         for dpath in self._iter_dirs():
@@ -199,6 +224,13 @@ class SkeletonReader:
 
     @lru_cache
     def annotation_to_ids(self) -> dict[str, list[int]]:
+        """Which skeletons string annotations are applied to.
+
+        Returns
+        -------
+        dict[str, list[int]]
+            Mapping from annotation name to list skeleton IDs.
+        """
         out: dict[str, list[int]] = dict()
 
         for dpath in self._iter_dirs():
@@ -209,15 +241,83 @@ class SkeletonReader:
         return out
 
     def get_by_name(self, name: str) -> navis.TreeNeuron:
+        """Read neuron with the given name.
+
+        Parameters
+        ----------
+        name : str
+            Exact neuron name.
+
+        Returns
+        -------
+        navis.TreeNeuron
+        """
         d = self.name_to_id()
         return self.get_by_id(d[name])
 
     def get_by_annotation(self, annotation: str) -> Iterable[navis.TreeNeuron]:
+        """Lazily iterate through neurons with the given annotation.
+
+        Parameters
+        ----------
+        annotation : str
+            Exact annotation.
+
+        Yields
+        ------
+        navis.TreeNeuron
+        """
         d = self.annotation_to_ids()
         for skid in d[annotation]:
             yield self.get_by_id(skid)
 
+    def get_annotation_names(self) -> set[str]:
+        """Return all annotations represented in the dataset.
+
+        Returns
+        -------
+        set[str]
+            Set of annotation names.
+        """
+        d = self.annotation_to_ids()
+        return set(d)
+
+    def get_annotation_graph(self) -> nx.DiGraph:
+        """Return graph of neurons and their annotations.
+
+        Returns
+        -------
+        nx.DiGraph
+            Edges are from annotations to skeleton names.
+            All nodes have attribute ``"type"``, which is either ``"neuron"`` or ``"annotation"``.
+            all edges have attribute ``"meta_annotation"=False``.
+        """
+        g = nx.DiGraph()
+        anns = set()
+        neurons = set()
+        for dpath in self._iter_dirs():
+            meta = self._read_meta(dpath)
+            name = meta["name"]
+            neurons.add(name)
+            for ann in meta["annotations"]:
+                anns.add(ann)
+                g.add_edge(ann, name, meta_annotation=False)
+
+        for ann in anns:
+            g.nodes[ann]["type"] = "annotation"
+
+        for name in neurons:
+            g.nodes[name]["type"] = "neuron"
+
+        return g
+
     def get_all(self) -> Iterable[navis.TreeNeuron]:
+        """Lazily iterate through neurons in arbitrary order.
+
+        Yields
+        ------
+        navis.TreeNeuron
+        """
         for dpath in self._iter_dirs():
             yield self._read_neuron(dpath)
 

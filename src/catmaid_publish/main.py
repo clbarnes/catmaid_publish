@@ -191,7 +191,6 @@ def publish_from_config(
             "name": "catmaid_publish",
             "url": "https://github.com/clbarnes/catmaid_publish",
             "version": f"{__version__}",
-            "timestamp": timestamp,
         },
     }
 

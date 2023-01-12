@@ -1,15 +1,10 @@
 import sys
-from pathlib import Path
 from typing import Any
 
 import pymaid
 
 from . import __version__
-from .annotations import AnnotationReader
 from .constants import DATA_DIR
-from .landmarks import LandmarkReader
-from .skeletons import SkeletonReader
-from .volumes import VolumeReader
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -60,25 +55,3 @@ def get_catmaid_instance(*dicts) -> pymaid.CatmaidInstance:
         if d:
             kwargs.update(d)
     return pymaid.CatmaidInstance.from_environment(**kwargs)
-
-
-class DataReader:
-    def __init__(self, dpath: Path) -> None:
-        self.dpath = dpath
-
-        self.volumes = (
-            VolumeReader(dpath / "volumes") if (dpath / "volumes").is_dir() else None
-        )
-        self.landmarks = (
-            LandmarkReader(dpath / "landmarks")
-            if (dpath / "landmarks").is_dir()
-            else None
-        )
-        self.neurons = (
-            SkeletonReader(dpath / "neurons") if (dpath / "neurons").is_dir() else None
-        )
-        self.annotations = (
-            AnnotationReader(dpath / "annotations")
-            if (dpath / "annotations").is_dir()
-            else None
-        )
