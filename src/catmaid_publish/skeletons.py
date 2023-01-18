@@ -3,7 +3,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, NamedTuple, Optional, Sequence, Union
 
 import navis
 import networkx as nx
@@ -145,10 +145,31 @@ def write_skeleton(dpath: Path, nrn: pymaid.CatmaidNeuron, meta: dict[str, Any])
     conns.to_csv(dpath / "connectors.tsv", sep="\t", index=False)
 
 
-class SkeletonReader:
-    """Class for reading exported skeletonised neuron data."""
+class ReadSpec(NamedTuple):
+    nodes: bool = True
+    connectors: bool = True
+    tags: bool = True
 
-    def __init__(self, dpath: Path) -> None:
+    def copy(self, nodes=None, connectors=None, tags=None):
+        return type(self)(
+            nodes=nodes if nodes is not None else self.nodes,
+            connectors=connectors if connectors is not None else self.connectors,
+            tags=tags if tags is not None else self.tags,
+        )
+
+
+class SkeletonReader:
+    """Class for reading exported skeletonised neuron data.
+
+    Most "get_" methods take a ``read_spec`` argument.
+    This is a 3-(named)tuple of bools representing
+    whether to populate the nodes, connectors, and tags fields
+    of the returned TreeNeuron objects.
+    By default, all will be populated.
+    Metadata is always populated.
+    """
+
+    def __init__(self, dpath: Path, units=None, read_spec=ReadSpec()) -> None:
         """
         Parameters
         ----------
@@ -156,6 +177,8 @@ class SkeletonReader:
             Directory in which the neuron data is saved.
         """
         self.dpath = dpath
+        self.units = units
+        self.default_read_spec = ReadSpec(*read_spec)
 
     @lru_cache
     def _read_meta(self, dpath):
@@ -173,22 +196,50 @@ class SkeletonReader:
         conns.rename(columns={"is_input": "type"}, inplace=True)
         return conns
 
-    def _read_neuron(self, dpath) -> navis.TreeNeuron:
-        nodes = self._read_nodes(dpath)
-        nrn = navis.TreeNeuron(nodes)
+    def parse_read_spec(self, read_spec: Optional[Sequence[bool]] = None) -> ReadSpec:
+        if read_spec is None:
+            read_spec = self.default_read_spec
+        else:
+            read_spec = ReadSpec(*read_spec)
+        return read_spec
 
-        meta = self._read_meta(dpath)
+    def _construct_neuron(self, meta, nodes=None, tags=None, connectors=None):
+        nrn = navis.TreeNeuron(nodes, self.units, annotations=meta["annotations"])
         nrn.id = meta["id"]
         nrn.name = meta["name"]
         nrn.soma = meta["soma_id"]
 
-        nrn.tags = self._read_tags(dpath)
-
-        nrn.connectors = self._read_connectors(dpath)
-
+        nrn.tags = tags
+        nrn.connectors = connectors
         return nrn
 
-    def get_by_id(self, skeleton_id: int) -> navis.TreeNeuron:
+    def _read_neuron(
+        self, dpath, read_spec: Optional[ReadSpec] = None
+    ) -> navis.TreeNeuron:
+        read_spec = self.parse_read_spec(read_spec)
+
+        meta = self._read_meta(dpath)
+
+        if read_spec.nodes:
+            nodes = self._read_nodes(dpath)
+        else:
+            nodes = None
+
+        if read_spec.tags:
+            tags = self._read_tags(dpath)
+        else:
+            tags = None
+
+        if read_spec.connectors:
+            connectors = self._read_connectors(dpath)
+        else:
+            connectors = None
+
+        return self._construct_neuron(meta, nodes, tags, connectors)
+
+    def get_by_id(
+        self, skeleton_id: int, read_spec: Optional[ReadSpec] = None
+    ) -> navis.TreeNeuron:
         """Read neuron with the given ID.
 
         Parameters
@@ -199,7 +250,7 @@ class SkeletonReader:
         -------
         navis.TreeNeuron
         """
-        return self._read_neuron(self.dpath / str(skeleton_id))
+        return self._read_neuron(self.dpath / str(skeleton_id), read_spec)
 
     def _iter_dirs(self):
         for path in self.dpath.iterdir():
@@ -240,7 +291,9 @@ class SkeletonReader:
 
         return out
 
-    def get_by_name(self, name: str) -> navis.TreeNeuron:
+    def get_by_name(
+        self, name: str, read_spec: Optional[ReadSpec] = None
+    ) -> navis.TreeNeuron:
         """Read neuron with the given name.
 
         Parameters
@@ -253,9 +306,11 @@ class SkeletonReader:
         navis.TreeNeuron
         """
         d = self.name_to_id()
-        return self.get_by_id(d[name])
+        return self.get_by_id(d[name], read_spec)
 
-    def get_by_annotation(self, annotation: str) -> Iterable[navis.TreeNeuron]:
+    def get_by_annotation(
+        self, annotation: str, read_spec: Optional[ReadSpec] = None
+    ) -> Iterable[navis.TreeNeuron]:
         """Lazily iterate through neurons with the given annotation.
 
         Parameters
@@ -269,7 +324,7 @@ class SkeletonReader:
         """
         d = self.annotation_to_ids()
         for skid in d[annotation]:
-            yield self.get_by_id(skid)
+            yield self.get_by_id(skid, read_spec)
 
     def get_annotation_names(self) -> set[str]:
         """Return all annotations represented in the dataset.
@@ -285,12 +340,17 @@ class SkeletonReader:
     def get_annotation_graph(self) -> nx.DiGraph:
         """Return graph of neurons and their annotations.
 
+        Parameters
+        ----------
+        with_neuron_data : bool or ReadSpec, optional
+            If False (default), do not read the full neuron data.
+
         Returns
         -------
         nx.DiGraph
-            Edges are from annotations to skeleton names.
+            Edges are from annotations to neuron names.
             All nodes have attribute ``"type"``, which is either ``"neuron"`` or ``"annotation"``.
-            all edges have attribute ``"meta_annotation"=False``.
+            All edges have attribute ``"meta_annotation"=False``.
         """
         g = nx.DiGraph()
         anns = set()
@@ -303,15 +363,15 @@ class SkeletonReader:
                 anns.add(ann)
                 g.add_edge(ann, name, meta_annotation=False)
 
+        ann_data = {"type": "annotation"}
         for ann in anns:
-            g.nodes[ann]["type"] = "annotation"
-
-        for name in neurons:
-            g.nodes[name]["type"] = "neuron"
+            g.nodes[ann].update(ann_data)
 
         return g
 
-    def get_all(self) -> Iterable[navis.TreeNeuron]:
+    def get_all(
+        self, read_spec: Optional[ReadSpec] = None
+    ) -> Iterable[navis.TreeNeuron]:
         """Lazily iterate through neurons in arbitrary order.
 
         Yields
@@ -319,7 +379,7 @@ class SkeletonReader:
         navis.TreeNeuron
         """
         for dpath in self._iter_dirs():
-            yield self._read_neuron(dpath)
+            yield self._read_neuron(dpath, read_spec)
 
 
 README = """

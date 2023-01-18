@@ -2,6 +2,8 @@ from pathlib import Path
 
 import networkx as nx
 
+from catmaid_publish.io_helpers import read_toml
+
 from .annotations import AnnotationReader
 from .landmarks import LandmarkReader
 from .skeletons import SkeletonReader
@@ -13,10 +15,12 @@ class DataReader:
 
     Attributes
     ----------
-    volumes : VolumeReader
-    landmarks : LandmarkReader
-    neurons : SkeletonReader
-    annotations : AnnotationReader
+    metadata : Optional[dict]
+        Export metadata, if present.
+    volumes : Optional[VolumeReader]
+    landmarks : Optional[LandmarkReader]
+    neurons : Optional[SkeletonReader]
+    annotations : Optional[AnnotationReader]
     """
 
     def __init__(self, dpath: Path) -> None:
@@ -28,6 +32,12 @@ class DataReader:
         """
         self.dpath = dpath
 
+        meta_path = self.dpath / "metadata.toml"
+        if meta_path.is_file():
+            self.metadata = read_toml(meta_path)
+        else:
+            self.metadata = None
+
         self.volumes = (
             VolumeReader(dpath / "volumes") if (dpath / "volumes").is_dir() else None
         )
@@ -37,7 +47,12 @@ class DataReader:
             else None
         )
         self.neurons = (
-            SkeletonReader(dpath / "neurons") if (dpath / "neurons").is_dir() else None
+            SkeletonReader(
+                dpath / "neurons",
+                self.metadata.get("units") if self.metadata else None,
+            )
+            if (dpath / "neurons").is_dir()
+            else None
         )
         self.annotations = (
             AnnotationReader(dpath / "annotations")
