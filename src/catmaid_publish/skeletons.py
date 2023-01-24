@@ -1,9 +1,10 @@
 import json
+import logging
 from collections import defaultdict
 from collections.abc import Iterable
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, NamedTuple, Optional, Sequence, Union
+from typing import Any, NamedTuple, Optional, Sequence
 
 import navis
 import networkx as nx
@@ -13,6 +14,8 @@ import pymaid
 from tqdm import tqdm
 
 from .utils import fill_in_dict
+
+logger = logging.getLogger(__name__)
 
 
 def get_all_skids():
@@ -67,8 +70,11 @@ def get_skeletons(
         if annotated:
             skids.update(pymaid.get_skids_by_annotation(annotated))
 
-    for skid in tqdm(sorted(skids), desc="Skeletons"):
-        nrn: pymaid.CatmaidNeuron = pymaid.get_neuron(skid)
+    logger.warning("Fetching %s skeletons, may be slow", len(skids))
+    neurons: pymaid.CatmaidNeuronList = pymaid.get_neuron(sorted(skids))
+
+    nrn: pymaid.CatmaidNeuron
+    for nrn in tqdm(neurons, desc="Finalising neurons"):
         nrn.name = rename.get(nrn.name, nrn.name)
         nrn.tags = filter_tags(nrn.tags, tag_names, tag_rename)
         anns = get_renamed_annotations(nrn, annotations_rename)
