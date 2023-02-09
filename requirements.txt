@@ -17,6 +17,7 @@ ipdb
 ipython
 isort
 mypy
+pdoc3
 pur
 pytest
 setuptools

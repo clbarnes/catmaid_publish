@@ -145,3 +145,4 @@ src/catmaid_publish/version.py
 # apptainer image files
 *.sif
 tmp/
+docs/

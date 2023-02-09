@@ -1,5 +1,6 @@
 import sys
-from typing import Any
+from collections.abc import Mapping
+from typing import Any, Optional
 
 import pymaid
 
@@ -19,6 +20,45 @@ def get_data_dir(dname=__version__):
 def read_toml(fpath):
     with open(fpath, "rb") as f:
         return tomllib.load(f)
+
+
+NO_DEFAULT = object()
+
+
+class Config:
+    def __init__(self, d: Optional[dict[str, Any]] = None) -> None:
+        if d is None:
+            d = dict()
+        self._d = d
+
+    def get(self, *keys, default=NO_DEFAULT) -> Any:
+        """Default only applies to final key."""
+        d = self._d
+        for idx, k in enumerate(keys, 1):
+            try:
+                d = d[k]
+            except KeyError as e:
+                if idx == len(keys) and default is not NO_DEFAULT:
+                    return default
+                raise e
+
+        if isinstance(d, Mapping):
+            return type(self)(d)
+
+        return d
+
+    @classmethod
+    def from_toml(cls, path):
+        with open(path, "rb") as f:
+            d = tomllib.load(f)
+        return cls(d)
+
+    def __hash__(self):
+        hashable = hashable_toml_dict(self._d)
+        return hash(hashable)
+
+    def hex_digest(self):
+        return hex(hash(self))[2:]
 
 
 def hashable_toml_dict(d: dict[str, Any]):

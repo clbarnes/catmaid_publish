@@ -28,3 +28,15 @@ install-dev:
 .PHONY: container
 container:
 	sudo apptainer build --bind "$(shell pwd)/.git:/project/.git" catmaid_publish.sif ./Apptainer
+
+.PHONY: readme
+readme:
+	catmaid_publish --help | p2c --tgt _catmaid_publish README.md
+
+.PHONY: clean-docs
+clean-docs:
+	rm -rf docs/
+
+.PHONY: docs
+docs: clean-docs
+	pdoc3 --html --output-dir docs/ catmaid_publish

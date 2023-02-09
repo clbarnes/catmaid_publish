@@ -2,9 +2,8 @@ from pathlib import Path
 
 import networkx as nx
 
-from catmaid_publish.io_helpers import read_toml
-
 from .annotations import AnnotationReader
+from .io_helpers import read_toml
 from .landmarks import LandmarkReader
 from .skeletons import SkeletonReader
 from .volumes import VolumeReader
@@ -15,12 +14,16 @@ class DataReader:
 
     Attributes
     ----------
-    metadata : Optional[dict]
-        Export metadata, if present.
+    metadata : Optional[dict[str, Any]]
+        Metadata of export, if present.
     volumes : Optional[VolumeReader]
+        Reader for volume data, if present.
     landmarks : Optional[LandmarkReader]
+        Reader for landmark data, if present.
     neurons : Optional[SkeletonReader]
+        Reader for neuronal/ skeleton data, if present.
     annotations : Optional[AnnotationReader]
+        Reader for annotation data, if present.
     """
 
     def __init__(self, dpath: Path) -> None:
@@ -30,7 +33,7 @@ class DataReader:
         dpath : Path
             Directory in which all data is saved.
         """
-        self.dpath = dpath
+        self.dpath = Path(dpath)
 
         meta_path = self.dpath / "metadata.toml"
         if meta_path.is_file():

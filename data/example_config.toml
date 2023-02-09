@@ -15,29 +15,40 @@ biblatex = '''
 server_url = "https://url.to/my/instance"
 project_id = 1
 units = "nm"
-# any necessary authentication should be passed with environment variables
+# credentials should be stored in a separate TOML file,
+# with keys api_token, http_user, and http_password,
+# whose path is passed to the catmaid_publish command,
+# or passed with environment variables
+# CATMAID_API_TOKEN, CATMAID_HTTP_USER and CATMAID_HTTP_PASSWORD
 
 [annotations]
+all = false
 annotated = []
-names = []  # comment out to include all
+names = []
 rename = {}
 
 [skeletons]
+all = false
 annotated = []
-names = []  # comment out to include all
+names = []
 rename = {}
 
 [skeletons.tags]
-names = []  # comment out to include all
+all = false
+names = []
 rename = {}
 
 [volumes]
-# annotated = []
-names = []  # comment out to include all
+all = false
+names = []
 rename = {}
 
 [landmarks]
-groups = []
-group_rename = {}
+all = false
+names = []
+rename = {}
+
+[landmarks.groups]
+all = false
 names = []
 rename = {}

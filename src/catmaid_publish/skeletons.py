@@ -152,6 +152,8 @@ def write_skeleton(dpath: Path, nrn: pymaid.CatmaidNeuron, meta: dict[str, Any])
 
 
 class ReadSpec(NamedTuple):
+    """Specify a subset of a skeleton's data to read."""
+
     nodes: bool = True
     connectors: bool = True
     tags: bool = True
@@ -434,5 +436,5 @@ A JSON file with miscellaneous data about the neuron, including:
 - `"name"`: name of the neuron
 - `"id"`: integer ID of the neuron
 - `"soma_id"`: integer ID of the neuron's soma (`null` if not labeled)
-- `"annotations"`: listi of string labels applied to the neuron
+- `"annotations"`: list of string labels applied to the neuron
 """.lstrip()
