@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: eWaterCycle/setup-apptainer@v2
-      - run: make apptainer
+      - run: make container
 
   docs:
     runs-on: ubuntu-22.04
@@ -50,7 +50,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.10'
       - run: |
           pip install -U pip wheel setuptools
           pip install -r requirements.txt
