@@ -9,8 +9,6 @@ From: python:3.10.8-bullseye
 
 %files
     ./src /project/src
-    ./scripts /project/scripts
-    # ./tests /project/tests
     ./.gitignore /project/.gitignore
     ./LICENSE /project/LICENSE
     ./pyproject.toml /project/pyproject.toml
