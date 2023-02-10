@@ -3,7 +3,8 @@
 For the latest version, see here: https://github.com/clbarnes/catmaid_publish ;
 for docs see here: https://clbarnes.github.io/catmaid_publish
 
-Scripts for publishing data from CATMAID
+Scripts for publishing data from CATMAID.
+Also useful for taking a snapshot of a particular set of data for further reproducible analysis (but be careful not to mix exported data with live data from the server).
 
 Originally created using
 [cookiecutter](https://github.com/cookiecutter/cookiecutter) and
