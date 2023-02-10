@@ -134,6 +134,9 @@ README = """
 
 Annotations are text labels applied to neurons and to other annotations.
 
+Data in this directory can be parsed into a `networkx.DiGraph`
+using `catmaid_publish.AnnotationReader`.
+
 ## Files
 
 ### `annotations.json`

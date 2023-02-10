@@ -150,6 +150,9 @@ README = """
 
 Volumes are regions of interest represented by 3D triangular meshes.
 
+Data in this directory can be parsed into `navis.Volume`s
+using `catmaid_publish.VolumeReader`.
+
 ## Files
 
 ### `names.tsv`

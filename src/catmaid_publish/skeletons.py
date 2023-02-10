@@ -399,7 +399,13 @@ a tree graph of points in 3D space ("nodes") which each have an integer ID.
 Neurons also have tags: text labels applied to certain nodes.
 Synapses between neurons are represented as connectors:
 a point in 3D space associated with a node, which may be an input or an output.
-Finally, neurons have some associated metadata, including their name, a set of annotations (text labels associated with the neuron rather than its nodes), and optionally the node ID of the neuron's soma.
+Finally, neurons have some associated metadata,
+including their name, a set of annotations
+(text labels associated with the neuron rather than its nodes),
+and optionally the node ID of the neuron's soma.
+
+Data in this directory can be parsed into `navis.TreeNeuron`s
+using `catmaid_publish.NeuronReader`.
 
 ## Files
 

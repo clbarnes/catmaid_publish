@@ -254,6 +254,10 @@ This allows for *landmark*/ *group* intersections like:
 - landmark: bilateral pair of homologous neuron lineage **A** entry points
 - group: all neuron lineage entry points on the **left** side of the brain
 
+Data in this directory can be parsed into sets of `catmaid_publish.Location` objects
+(which contain coordinates and landmark/group memberships)
+using `catmaid_publish.LandmarkReader`.
+
 ## Files
 
 ### `locations.json`

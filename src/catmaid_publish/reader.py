@@ -1,4 +1,5 @@
 from pathlib import Path
+import datetime as dt
 
 import networkx as nx
 
@@ -8,6 +9,8 @@ from .landmarks import LandmarkReader
 from .skeletons import SkeletonReader
 from .volumes import VolumeReader
 
+NO_DEFAULT = object()
+
 
 class DataReader:
     """Class for reading exported data.
@@ -15,7 +18,7 @@ class DataReader:
     Attributes
     ----------
     metadata : Optional[dict[str, Any]]
-        Metadata of export, if present.
+        Various metadata of export, if present.
     volumes : Optional[VolumeReader]
         Reader for volume data, if present.
     landmarks : Optional[LandmarkReader]
@@ -62,6 +65,48 @@ class DataReader:
             if (dpath / "annotations").is_dir()
             else None
         )
+
+    def get_metadata(self, *keys: str, default=NO_DEFAULT):
+        """Get values from nested metadata dict.
+
+        e.g. to retrieve ``myvalue`` from metadata like
+        ``{"A": {"B": myvalue}}``, use
+        ``my_reader.get_metadata("A", "B")``.
+
+        Parameters
+        ----------
+        *keys : str
+            String keys for accessing nested values.
+        default : any, optional
+            Value to return if key is not present, at any level.
+            By default, raises a ``KeyError``.
+
+        Returns
+        -------
+        Any
+
+        Raises
+        ------
+        KeyError
+            Key does not exist and no default given.
+        """
+        if self.metadata is None:
+            if default is not NO_DEFAULT:
+                return default
+            elif keys:
+                raise KeyError(keys[0])
+            else:
+                return None
+
+        d = self.metadata
+        for k in keys:
+            try:
+                d = d[k]
+            except KeyError as e:
+                if default is NO_DEFAULT:
+                    raise e
+                return default
+        return d
 
     def get_full_annotation_graph(self) -> nx.DiGraph:
         """Get annotation graph including meta-annotations and neurons.
