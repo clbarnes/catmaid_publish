@@ -1,5 +1,4 @@
 from pathlib import Path
-import datetime as dt
 
 import networkx as nx
 
