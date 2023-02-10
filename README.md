@@ -1,6 +1,7 @@
 # catmaid_publish
 
-For the latest version, see here: https://github.com/clbarnes/catmaid_publish
+For the latest version, see here: https://github.com/clbarnes/catmaid_publish ;
+for docs see here: https://clbarnes.github.io/catmaid_publish
 
 Scripts for publishing data from CATMAID
 
