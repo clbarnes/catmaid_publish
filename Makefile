@@ -35,7 +35,7 @@ readme:
 
 .PHONY: clean-docs
 clean-docs:
-	rm -rf docs/
+	rm -rf docs/catmaid_publish
 
 .PHONY: docs
 docs: clean-docs
