@@ -21,17 +21,21 @@ units = "nm"
 # or passed with environment variables
 # CATMAID_API_TOKEN, CATMAID_HTTP_USER and CATMAID_HTTP_PASSWORD
 
+readme_footer = ""
+
 [annotations]
 all = false
 annotated = []
 names = []
 rename = {}
+readme_footer = ""
 
 [skeletons]
 all = false
 annotated = []
 names = []
 rename = {}
+readme_footer = ""
 
 [skeletons.tags]
 all = false
@@ -42,11 +46,13 @@ rename = {}
 all = false
 names = []
 rename = {}
+readme_footer = ""
 
 [landmarks]
 all = false
 names = []
 rename = {}
+readme_footer = ""
 
 [landmarks.groups]
 all = false

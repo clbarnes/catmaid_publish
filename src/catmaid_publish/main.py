@@ -14,12 +14,13 @@ from tqdm import tqdm
 from . import __version__
 from .annotations import README as ann_readme
 from .annotations import get_annotations, write_annotation_graph
+from .constants import README_FOOTER_KEY
 from .io_helpers import Config, get_catmaid_instance, read_toml
 from .landmarks import README as lmark_readme
 from .landmarks import get_landmarks, write_landmarks
 from .skeletons import README as skel_readme
 from .skeletons import get_skeletons, write_skeleton
-from .utils import setup_logging
+from .utils import join_markdown, setup_logging
 from .volumes import README as vol_readme
 from .volumes import get_volumes, write_volumes
 
@@ -45,7 +46,11 @@ def publish_annotations(config: Config, out_dir: Path, pbar=None):
         if pbar is not None:
             pbar.set_description("Writing annotations")
         (out_dir / "annotations").mkdir()
-        (out_dir / "annotations/README.md").write_text(ann_readme)
+        readme = join_markdown(
+            ann_readme,
+            ann_conf.get(README_FOOTER_KEY, default=""),
+        )
+        (out_dir / "annotations/README.md").write_text(readme)
         write_annotation_graph(
             out_dir / "annotations/annotation_graph.json", ann_children
         )
@@ -76,7 +81,11 @@ def publish_skeletons(config: Config, out_dir, ann_renames, pbar=None):
     ):
         write_skeleton(skel_dir / str(nrn.id), nrn, meta)
     if skel_dir.exists():
-        (skel_dir / "README.md").write_text(skel_readme)
+        readme = join_markdown(
+            skel_readme,
+            skel_conf.get(README_FOOTER_KEY, default=""),
+        )
+        (skel_dir / "README.md").write_text(readme)
         ret = True
     else:
         ret = False
@@ -101,7 +110,12 @@ def publish_volumes(config: Config, out_dir, pbar=None):
         if pbar is not None:
             pbar.set_description("Writing volumes")
         write_volumes(out_dir / "volumes", vols)
-        (out_dir / "volumes/README.md").write_text(vol_readme)
+
+        readme = join_markdown(
+            vol_readme,
+            vol_conf.get(README_FOOTER_KEY, default=""),
+        )
+        (out_dir / "volumes/README.md").write_text(readme)
         ret = True
     else:
         ret = False
@@ -130,7 +144,12 @@ def publish_landmarks(config: Config, out_dir, pbar=None):
             pbar.set_description("Writing landmarks")
         (out_dir / "landmarks").mkdir()
         write_landmarks(out_dir / "landmarks/locations.json", lmarks, groups)
-        (out_dir / "landmarks/README.md").write_text(lmark_readme)
+
+        readme = join_markdown(
+            lmark_readme,
+            lmark_conf.get(README_FOOTER_KEY, default=""),
+        )
+        (out_dir / "landmarks/README.md").write_text(readme)
         ret = True
     else:
         ret = False
@@ -223,7 +242,11 @@ def publish_from_config(
         tomli_w.dump(meta, f, multiline_strings=multiline_strings)
 
     with open(out_dir / "README.md", "w") as f:
-        f.write(README)
+        readme = join_markdown(
+            README,
+            project.get(README_FOOTER_KEY),
+        )
+        f.write(readme)
 
 
 def _main(args=None):

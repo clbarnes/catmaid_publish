@@ -50,6 +50,10 @@ Some objects can be annotated.
 In this case, you can instead list annotations for which annotated objects will be exported.
 Indirectly annotated ("sub-annotated") objects, e.g. the relationship between A and C in `annotation "A" -> annotation "B" -> skeleton "C"` will also be exported.
 
+All exported data have a pre-written `README.md` file detailing the data format and structure.
+You can add additional information to the README using the `readme_footer` key.
+This string will have leading and trailing whitespace stripped, and, if still non-empty, will be appended to the default README below a thematic break.
+
 ### Authentication
 
 If your CATMAID instance requires authentication (with a CATMAID account and/or HTTP Basic authentication), fill in these details in a separate TOML file, or as environment variables.

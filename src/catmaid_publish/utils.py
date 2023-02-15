@@ -103,3 +103,24 @@ def descendants(g: nx.DiGraph, roots: list[str], max_depth=None) -> set[str]:
             continue
         to_visit.extend((n, depth + 1) for n in g.successors(node))
     return out
+
+
+def join_markdown(*strings: Optional[str]) -> str:
+    """Join stripped markdown strings with thematic breaks.
+
+    Returns
+    -------
+    str
+    """
+    out = []
+    for s in strings:
+        if s is None:
+            continue
+        s = s.strip()
+        if s:
+            out.append(s)
+
+    if out:
+        out.append(out.pop() + "\n")
+
+    return "\n\n---\n\n".join(out)

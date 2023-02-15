@@ -19,3 +19,4 @@ else:
 CREDENTIALS_DIR = PROJECT_DIR / "credentials"
 
 CACHE_SIZE = 1024
+README_FOOTER_KEY = "readme_footer"
