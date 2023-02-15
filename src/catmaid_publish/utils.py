@@ -71,7 +71,6 @@ def copy_cache(deep: bool = True, maxsize: Optional[int] = 128, typed: bool = Fa
     copier = deepcopy if deep else copy
 
     def wrapper(fn):
-
         wrapped = lru_cache(maxsize, typed)(fn)
 
         @wraps(fn)
