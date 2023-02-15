@@ -2,12 +2,12 @@
 """
 Write an empty config file and, optionally, credentials files.
 """
-from argparse import ArgumentParser
 import logging
-from pathlib import Path
-from typing import Any, Optional
 import os
 import sys
+from argparse import ArgumentParser
+from pathlib import Path
+from typing import Any, Optional
 
 if sys.version_info >= (3, 10):
     from importlib.resources import files
@@ -18,7 +18,6 @@ if sys.version_info >= (3, 11):
     import tomllib
 else:
     import tomli as tomllib
-
 
 from .utils import setup_logging
 
