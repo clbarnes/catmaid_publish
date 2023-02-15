@@ -96,9 +96,9 @@ class DataReader:
     def get_metadata(self, *keys: str, default=NO_DEFAULT):
         &#34;&#34;&#34;Get values from nested metadata dict.
 
-        e.g. to retrieve ``myvalue`` from metadata like
+        e.g. to retrieve possibly-absent ``myvalue`` from metadata like
         ``{&#34;A&#34;: {&#34;B&#34;: myvalue}}``, use
-        ``my_reader.get_metadata(&#34;A&#34;, &#34;B&#34;)``.
+        ``my_reader.get_metadata(&#34;A&#34;, &#34;B&#34;, default=None)``.
 
         Parameters
         ----------
@@ -249,9 +249,9 @@ class DataReader:
     def get_metadata(self, *keys: str, default=NO_DEFAULT):
         &#34;&#34;&#34;Get values from nested metadata dict.
 
-        e.g. to retrieve ``myvalue`` from metadata like
+        e.g. to retrieve possibly-absent ``myvalue`` from metadata like
         ``{&#34;A&#34;: {&#34;B&#34;: myvalue}}``, use
-        ``my_reader.get_metadata(&#34;A&#34;, &#34;B&#34;)``.
+        ``my_reader.get_metadata(&#34;A&#34;, &#34;B&#34;, default=None)``.
 
         Parameters
         ----------
@@ -352,9 +352,9 @@ Edges have a boolean attribute <code>"meta_annotation"</code>
 </code></dt>
 <dd>
 <div class="desc"><p>Get values from nested metadata dict.</p>
-<p>e.g. to retrieve <code>myvalue</code> from metadata like
+<p>e.g. to retrieve possibly-absent <code>myvalue</code> from metadata like
 <code>{"A": {"B": myvalue}}</code>, use
-<code>my_reader.get_metadata("A", "B")</code>.</p>
+<code>my_reader.get_metadata("A", "B", default=None)</code>.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>*keys</code></strong> :&ensp;<code>str</code></dt>
@@ -380,9 +380,9 @@ By default, raises a <code>KeyError</code>.</dd>
 <pre><code class="python">def get_metadata(self, *keys: str, default=NO_DEFAULT):
     &#34;&#34;&#34;Get values from nested metadata dict.
 
-    e.g. to retrieve ``myvalue`` from metadata like
+    e.g. to retrieve possibly-absent ``myvalue`` from metadata like
     ``{&#34;A&#34;: {&#34;B&#34;: myvalue}}``, use
-    ``my_reader.get_metadata(&#34;A&#34;, &#34;B&#34;)``.
+    ``my_reader.get_metadata(&#34;A&#34;, &#34;B&#34;, default=None)``.
 
     Parameters
     ----------

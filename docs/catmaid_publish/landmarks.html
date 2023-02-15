@@ -30,14 +30,13 @@
 
 import json
 from dataclasses import asdict, dataclass, field
-from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
 import pandas as pd
 import pymaid
 
-from .utils import fill_in_dict
+from .utils import copy_cache, fill_in_dict
 
 
 def get_landmarks(
@@ -194,7 +193,7 @@ class LandmarkReader:
         self.dpath = dpath
         self.fpath = dpath / &#34;locations.json&#34;
 
-    @lru_cache
+    @copy_cache()
     def _locations(self):
         with open(self.fpath) as f:
             d = json.load(f)
@@ -466,7 +465,7 @@ Locations are not unique as they can belong to several landmarks and/or groups.<
         self.dpath = dpath
         self.fpath = dpath / &#34;locations.json&#34;
 
-    @lru_cache
+    @copy_cache()
     def _locations(self):
         with open(self.fpath) as f:
             d = json.load(f)

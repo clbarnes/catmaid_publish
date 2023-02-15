@@ -28,7 +28,11 @@
 </summary>
 <pre><code class="python">import logging
 from collections.abc import Iterable
-from typing import TypeVar
+from copy import copy, deepcopy
+from functools import lru_cache, wraps
+from typing import Optional, TypeVar
+
+import networkx as nx
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +60,98 @@ def fill_in_dict(to_fill: dict[T, T], fill_with: Iterable[T], inplace=False):
         if f not in to_fill:
             to_fill[f] = f
 
-    return to_fill</code></pre>
+    return to_fill
+
+
+def copy_cache(deep: bool = True, maxsize: Optional[int] = 128, typed: bool = False):
+    &#34;&#34;&#34;Decorator factory wrapping functools.lru_cache, which copies return values.
+
+    Use this for functions with mutable return values.
+    N.B. must be called with parentheses.
+
+    Parameters
+    ----------
+    deep : bool, optional
+        Whether to deepcopy return values, by default True
+    maxsize : Optional[int], optional
+        See lru_cache, by default 128.
+        Use None for an unbounded cache (which is also faster).
+    typed : bool, optional
+        See lru_cache, by default False
+
+    Returns
+    -------
+    Callable[[Callable], Callable]
+        Returns a decorator.
+
+    Examples
+    --------
+    &gt;&gt;&gt; @copy_cache()  # must include parentheses, unlike some zero-arg decorators
+    ... def my_function(key: str, value: int) -&gt; dict:
+    ...     return {key: value}
+    ...
+    &gt;&gt;&gt; d1 = my_function(&#34;a&#34;, 1)
+    &gt;&gt;&gt; d1[&#34;b&#34;] = 2
+    &gt;&gt;&gt; d2 = my_function(&#34;a&#34;, 1)
+    &gt;&gt;&gt; &#34;b&#34; in d2  # would be True with raw functools.lru_cache
+    False
+    &#34;&#34;&#34;
+    copier = deepcopy if deep else copy
+
+    def wrapper(fn):
+
+        wrapped = lru_cache(maxsize, typed)(fn)
+
+        @wraps(fn)
+        def copy_wrapped(*args, **kwargs):
+            out = wrapped(*args, **kwargs)
+            return copier(out)
+
+        copy_wrapped.cache_info = wrapped.cache_info
+        copy_wrapped.cache_clear = wrapped.cache_clear
+
+        return copy_wrapped
+
+    return wrapper
+
+
+def descendants(g: nx.DiGraph, roots: list[str], max_depth=None) -&gt; set[str]:
+    &#34;&#34;&#34;Find all descendant nodes from given roots, to a given depth.
+
+    Output includes given roots.
+    &#34;&#34;&#34;
+    out = set()
+    to_visit: list[tuple[str, int]] = [(r, 0) for r in roots]
+    while to_visit:
+        node, depth = to_visit.pop()
+        if node in out:
+            continue
+        out.add(node)
+        if max_depth is not None and depth &gt;= max_depth:
+            continue
+        to_visit.extend((n, depth + 1) for n in g.successors(node))
+    return out
+
+
+def join_markdown(*strings: Optional[str]) -&gt; str:
+    &#34;&#34;&#34;Join stripped markdown strings with thematic breaks.
+
+    Returns
+    -------
+    str
+    &#34;&#34;&#34;
+    out = []
+    for s in strings:
+        if s is None:
+            continue
+        s = s.strip()
+        if s:
+            out.append(s)
+
+    if out:
+        out.append(out.pop() + &#34;\n&#34;)
+
+    return &#34;\n\n---\n\n&#34;.join(out)</code></pre>
 </details>
 </section>
 <section>
@@ -66,6 +161,123 @@ def fill_in_dict(to_fill: dict[T, T], fill_with: Iterable[T], inplace=False):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="catmaid_publish.utils.copy_cache"><code class="name flex">
+<span>def <span class="ident">copy_cache</span></span>(<span>deep: bool = True, maxsize: Optional[int] = 128, typed: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Decorator factory wrapping functools.lru_cache, which copies return values.</p>
+<p>Use this for functions with mutable return values.
+N.B. must be called with parentheses.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>deep</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Whether to deepcopy return values, by default True</dd>
+<dt><strong><code>maxsize</code></strong> :&ensp;<code>Optional[int]</code>, optional</dt>
+<dd>See lru_cache, by default 128.
+Use None for an unbounded cache (which is also faster).</dd>
+<dt><strong><code>typed</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>See lru_cache, by default False</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Callable[[Callable], Callable]</code></dt>
+<dd>Returns a decorator.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; @copy_cache()  # must include parentheses, unlike some zero-arg decorators
+... def my_function(key: str, value: int) -&gt; dict:
+...     return {key: value}
+...
+&gt;&gt;&gt; d1 = my_function(&quot;a&quot;, 1)
+&gt;&gt;&gt; d1[&quot;b&quot;] = 2
+&gt;&gt;&gt; d2 = my_function(&quot;a&quot;, 1)
+&gt;&gt;&gt; &quot;b&quot; in d2  # would be True with raw functools.lru_cache
+False
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def copy_cache(deep: bool = True, maxsize: Optional[int] = 128, typed: bool = False):
+    &#34;&#34;&#34;Decorator factory wrapping functools.lru_cache, which copies return values.
+
+    Use this for functions with mutable return values.
+    N.B. must be called with parentheses.
+
+    Parameters
+    ----------
+    deep : bool, optional
+        Whether to deepcopy return values, by default True
+    maxsize : Optional[int], optional
+        See lru_cache, by default 128.
+        Use None for an unbounded cache (which is also faster).
+    typed : bool, optional
+        See lru_cache, by default False
+
+    Returns
+    -------
+    Callable[[Callable], Callable]
+        Returns a decorator.
+
+    Examples
+    --------
+    &gt;&gt;&gt; @copy_cache()  # must include parentheses, unlike some zero-arg decorators
+    ... def my_function(key: str, value: int) -&gt; dict:
+    ...     return {key: value}
+    ...
+    &gt;&gt;&gt; d1 = my_function(&#34;a&#34;, 1)
+    &gt;&gt;&gt; d1[&#34;b&#34;] = 2
+    &gt;&gt;&gt; d2 = my_function(&#34;a&#34;, 1)
+    &gt;&gt;&gt; &#34;b&#34; in d2  # would be True with raw functools.lru_cache
+    False
+    &#34;&#34;&#34;
+    copier = deepcopy if deep else copy
+
+    def wrapper(fn):
+
+        wrapped = lru_cache(maxsize, typed)(fn)
+
+        @wraps(fn)
+        def copy_wrapped(*args, **kwargs):
+            out = wrapped(*args, **kwargs)
+            return copier(out)
+
+        copy_wrapped.cache_info = wrapped.cache_info
+        copy_wrapped.cache_clear = wrapped.cache_clear
+
+        return copy_wrapped
+
+    return wrapper</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.utils.descendants"><code class="name flex">
+<span>def <span class="ident">descendants</span></span>(<span>g: networkx.classes.digraph.DiGraph, roots: list[str], max_depth=None) ‑> set[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Find all descendant nodes from given roots, to a given depth.</p>
+<p>Output includes given roots.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def descendants(g: nx.DiGraph, roots: list[str], max_depth=None) -&gt; set[str]:
+    &#34;&#34;&#34;Find all descendant nodes from given roots, to a given depth.
+
+    Output includes given roots.
+    &#34;&#34;&#34;
+    out = set()
+    to_visit: list[tuple[str, int]] = [(r, 0) for r in roots]
+    while to_visit:
+        node, depth = to_visit.pop()
+        if node in out:
+            continue
+        out.add(node)
+        if max_depth is not None and depth &gt;= max_depth:
+            continue
+        to_visit.extend((n, depth + 1) for n in g.successors(node))
+    return out</code></pre>
+</details>
+</dd>
 <dt id="catmaid_publish.utils.fill_in_dict"><code class="name flex">
 <span>def <span class="ident">fill_in_dict</span></span>(<span>to_fill: dict[~T, ~T], fill_with: collections.abc.Iterable[~T], inplace=False)</span>
 </code></dt>
@@ -84,6 +296,41 @@ def fill_in_dict(to_fill: dict[T, T], fill_with: Iterable[T], inplace=False):
             to_fill[f] = f
 
     return to_fill</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.utils.join_markdown"><code class="name flex">
+<span>def <span class="ident">join_markdown</span></span>(<span>*strings: Optional[str]) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Join stripped markdown strings with thematic breaks.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def join_markdown(*strings: Optional[str]) -&gt; str:
+    &#34;&#34;&#34;Join stripped markdown strings with thematic breaks.
+
+    Returns
+    -------
+    str
+    &#34;&#34;&#34;
+    out = []
+    for s in strings:
+        if s is None:
+            continue
+        s = s.strip()
+        if s:
+            out.append(s)
+
+    if out:
+        out.append(out.pop() + &#34;\n&#34;)
+
+    return &#34;\n\n---\n\n&#34;.join(out)</code></pre>
 </details>
 </dd>
 <dt id="catmaid_publish.utils.setup_logging"><code class="name flex">
@@ -126,7 +373,10 @@ def fill_in_dict(to_fill: dict[T, T], fill_with: Iterable[T], inplace=False):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="catmaid_publish.utils.copy_cache" href="#catmaid_publish.utils.copy_cache">copy_cache</a></code></li>
+<li><code><a title="catmaid_publish.utils.descendants" href="#catmaid_publish.utils.descendants">descendants</a></code></li>
 <li><code><a title="catmaid_publish.utils.fill_in_dict" href="#catmaid_publish.utils.fill_in_dict">fill_in_dict</a></code></li>
+<li><code><a title="catmaid_publish.utils.join_markdown" href="#catmaid_publish.utils.join_markdown">join_markdown</a></code></li>
 <li><code><a title="catmaid_publish.utils.setup_logging" href="#catmaid_publish.utils.setup_logging">setup_logging</a></code></li>
 </ul>
 </li>

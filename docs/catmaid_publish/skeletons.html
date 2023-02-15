@@ -41,7 +41,9 @@ import pandas as pd
 import pymaid
 from tqdm import tqdm
 
-from .utils import fill_in_dict
+from .annotations import sub_annotations
+from .constants import CACHE_SIZE
+from .utils import copy_cache, fill_in_dict
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +98,8 @@ def get_skeletons(
         if rename:
             skids.update(pymaid.get_skids_by_name(list(rename)))
         if annotated:
-            skids.update(pymaid.get_skids_by_annotation(annotated))
+            all_anns = sub_annotations(annotated)
+            skids.update(pymaid.get_skids_by_annotation(all_anns))
 
     logger.warning(&#34;Fetching %s skeletons, may be slow&#34;, len(skids))
     neurons: pymaid.CatmaidNeuronList = pymaid.get_neuron(sorted(skids))
@@ -216,17 +219,19 @@ class SkeletonReader:
         self.units = units
         self.default_read_spec = ReadSpec(*read_spec)
 
-    @lru_cache
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_meta(self, dpath):
         return json.loads((dpath / &#34;metadata.json&#34;).read_text())
 
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_nodes(self, dpath):
         return pd.read_csv(dpath / &#34;nodes.tsv&#34;, sep=&#34;\t&#34;)
 
-    @lru_cache
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_tags(self, dpath):
         return json.loads((dpath / &#34;tags.json&#34;).read_text())
 
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_connectors(self, dpath):
         conns = pd.read_csv(dpath / &#34;connectors.tsv&#34;, sep=&#34;\t&#34;)
         conns.rename(columns={&#34;is_input&#34;: &#34;type&#34;}, inplace=True)
@@ -374,18 +379,14 @@ class SkeletonReader:
         return set(d)
 
     def get_annotation_graph(self) -&gt; nx.DiGraph:
-        &#34;&#34;&#34;Return graph of neurons and their annotations.
-
-        Parameters
-        ----------
-        with_neuron_data : bool or ReadSpec, optional
-            If False (default), do not read the full neuron data.
+        &#34;&#34;&#34;Return graph of neuron annotations.
 
         Returns
         -------
         nx.DiGraph
             Edges are from annotations to neuron names.
-            All nodes have attribute ``&#34;type&#34;``, which is either ``&#34;neuron&#34;`` or ``&#34;annotation&#34;``.
+            All nodes have attribute ``&#34;type&#34;``,
+            which is either ``&#34;neuron&#34;`` or ``&#34;annotation&#34;``.
             All edges have attribute ``&#34;meta_annotation&#34;=False``.
         &#34;&#34;&#34;
         g = nx.DiGraph()
@@ -409,6 +410,13 @@ class SkeletonReader:
         self, read_spec: Optional[ReadSpec] = None
     ) -&gt; Iterable[navis.TreeNeuron]:
         &#34;&#34;&#34;Lazily iterate through neurons in arbitrary order.
+
+        Can be used for filtering neurons based on some metadata, e.g.
+
+            lefts = []
+            for nrn in my_reader.get_all(ReadSpec(False, False, False)):
+                if &#34;left&#34; in nrn.name:
+                    lefts.append(my_reader.get_by_id(nrn.id)))
 
         Yields
         ------
@@ -582,7 +590,8 @@ A JSON file with miscellaneous data about the neuron, including:
         if rename:
             skids.update(pymaid.get_skids_by_name(list(rename)))
         if annotated:
-            skids.update(pymaid.get_skids_by_annotation(annotated))
+            all_anns = sub_annotations(annotated)
+            skids.update(pymaid.get_skids_by_annotation(all_anns))
 
     logger.warning(&#34;Fetching %s skeletons, may be slow&#34;, len(skids))
     neurons: pymaid.CatmaidNeuronList = pymaid.get_neuron(sorted(skids))
@@ -789,17 +798,19 @@ Metadata is always populated.</p>
         self.units = units
         self.default_read_spec = ReadSpec(*read_spec)
 
-    @lru_cache
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_meta(self, dpath):
         return json.loads((dpath / &#34;metadata.json&#34;).read_text())
 
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_nodes(self, dpath):
         return pd.read_csv(dpath / &#34;nodes.tsv&#34;, sep=&#34;\t&#34;)
 
-    @lru_cache
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_tags(self, dpath):
         return json.loads((dpath / &#34;tags.json&#34;).read_text())
 
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_connectors(self, dpath):
         conns = pd.read_csv(dpath / &#34;connectors.tsv&#34;, sep=&#34;\t&#34;)
         conns.rename(columns={&#34;is_input&#34;: &#34;type&#34;}, inplace=True)
@@ -947,18 +958,14 @@ Metadata is always populated.</p>
         return set(d)
 
     def get_annotation_graph(self) -&gt; nx.DiGraph:
-        &#34;&#34;&#34;Return graph of neurons and their annotations.
-
-        Parameters
-        ----------
-        with_neuron_data : bool or ReadSpec, optional
-            If False (default), do not read the full neuron data.
+        &#34;&#34;&#34;Return graph of neuron annotations.
 
         Returns
         -------
         nx.DiGraph
             Edges are from annotations to neuron names.
-            All nodes have attribute ``&#34;type&#34;``, which is either ``&#34;neuron&#34;`` or ``&#34;annotation&#34;``.
+            All nodes have attribute ``&#34;type&#34;``,
+            which is either ``&#34;neuron&#34;`` or ``&#34;annotation&#34;``.
             All edges have attribute ``&#34;meta_annotation&#34;=False``.
         &#34;&#34;&#34;
         g = nx.DiGraph()
@@ -982,6 +989,13 @@ Metadata is always populated.</p>
         self, read_spec: Optional[ReadSpec] = None
     ) -&gt; Iterable[navis.TreeNeuron]:
         &#34;&#34;&#34;Lazily iterate through neurons in arbitrary order.
+
+        Can be used for filtering neurons based on some metadata, e.g.
+
+            lefts = []
+            for nrn in my_reader.get_all(ReadSpec(False, False, False)):
+                if &#34;left&#34; in nrn.name:
+                    lefts.append(my_reader.get_by_id(nrn.id)))
 
         Yields
         ------
@@ -1030,6 +1044,12 @@ def annotation_to_ids(self) -&gt; dict[str, list[int]]:
 </code></dt>
 <dd>
 <div class="desc"><p>Lazily iterate through neurons in arbitrary order.</p>
+<p>Can be used for filtering neurons based on some metadata, e.g.</p>
+<pre><code>lefts = []
+for nrn in my_reader.get_all(ReadSpec(False, False, False)):
+    if "left" in nrn.name:
+        lefts.append(my_reader.get_by_id(nrn.id)))
+</code></pre>
 <h2 id="yields">Yields</h2>
 <dl>
 <dt><code>navis.TreeNeuron</code></dt>
@@ -1044,6 +1064,13 @@ def annotation_to_ids(self) -&gt; dict[str, list[int]]:
 ) -&gt; Iterable[navis.TreeNeuron]:
     &#34;&#34;&#34;Lazily iterate through neurons in arbitrary order.
 
+    Can be used for filtering neurons based on some metadata, e.g.
+
+        lefts = []
+        for nrn in my_reader.get_all(ReadSpec(False, False, False)):
+            if &#34;left&#34; in nrn.name:
+                lefts.append(my_reader.get_by_id(nrn.id)))
+
     Yields
     ------
     navis.TreeNeuron
@@ -1056,17 +1083,13 @@ def annotation_to_ids(self) -&gt; dict[str, list[int]]:
 <span>def <span class="ident">get_annotation_graph</span></span>(<span>self) ‑> networkx.classes.digraph.DiGraph</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Return graph of neurons and their annotations.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>with_neuron_data</code></strong> :&ensp;<code>bool</code> or <code><a title="catmaid_publish.skeletons.ReadSpec" href="#catmaid_publish.skeletons.ReadSpec">ReadSpec</a></code>, optional</dt>
-<dd>If False (default), do not read the full neuron data.</dd>
-</dl>
+<div class="desc"><p>Return graph of neuron annotations.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>nx.DiGraph</code></dt>
 <dd>Edges are from annotations to neuron names.
-All nodes have attribute <code>"type"</code>, which is either <code>"neuron"</code> or <code>"annotation"</code>.
+All nodes have attribute <code>"type"</code>,
+which is either <code>"neuron"</code> or <code>"annotation"</code>.
 All edges have attribute <code>"meta_annotation"=False</code>.</dd>
 </dl></div>
 <details class="source">
@@ -1074,18 +1097,14 @@ All edges have attribute <code>"meta_annotation"=False</code>.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_annotation_graph(self) -&gt; nx.DiGraph:
-    &#34;&#34;&#34;Return graph of neurons and their annotations.
-
-    Parameters
-    ----------
-    with_neuron_data : bool or ReadSpec, optional
-        If False (default), do not read the full neuron data.
+    &#34;&#34;&#34;Return graph of neuron annotations.
 
     Returns
     -------
     nx.DiGraph
         Edges are from annotations to neuron names.
-        All nodes have attribute ``&#34;type&#34;``, which is either ``&#34;neuron&#34;`` or ``&#34;annotation&#34;``.
+        All nodes have attribute ``&#34;type&#34;``,
+        which is either ``&#34;neuron&#34;`` or ``&#34;annotation&#34;``.
         All edges have attribute ``&#34;meta_annotation&#34;=False``.
     &#34;&#34;&#34;
     g = nx.DiGraph()

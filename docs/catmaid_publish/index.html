@@ -25,7 +25,8 @@
 <h1 id="catmaid_publish">catmaid_publish</h1>
 <p>For the latest version, see here: <a href="https://github.com/clbarnes/catmaid_publish">https://github.com/clbarnes/catmaid_publish</a> ;
 for docs see here: <a href="https://clbarnes.github.io/catmaid_publish">https://clbarnes.github.io/catmaid_publish</a></p>
-<p>Scripts for publishing data from CATMAID</p>
+<p>Scripts for publishing data from CATMAID.
+Also useful for taking a snapshot of a particular set of data for further reproducible analysis (but be careful not to mix exported data with live data from the server).</p>
 <p>Originally created using
 <a href="https://github.com/cookiecutter/cookiecutter">cookiecutter</a> and
 <a href="https://github.com/clbarnes/python-template-sci">clbarnes/python-template-sci</a>.</p>
@@ -45,24 +46,51 @@ pip install git+https://github.com/clbarnes/catmaid_publish.git
 pip install -e .
 </code></pre>
 <h2 id="usage">Usage</h2>
+<p><code><a title="catmaid_publish" href="#catmaid_publish">catmaid_publish</a></code> fetches data from a CATMAID instance based on a configuration file.
+If the instance requires authentication, credentials can be passed with environment variables or a separate TOML file.</p>
+<h3 id="catmaid_publish_init"><code>catmaid_publish_init</code></h3>
+<p>Use this to initialise an empty config and optional credentials files.
+If you have already set your credentials using environment variables starting with <code>CATMAID_</code>, the credentials files will be filled in.</p>
+<pre><code class="language-_catmaid_publish_init">usage: catmaid_publish_init [-h] [--toml-credentials TOML_CREDENTIALS]
+                            [--env-credentials ENV_CREDENTIALS]
+                            [--no-http-basic] [--no-token]
+                            config
+
+Write an empty config file and, optionally, credentials files.
+
+positional arguments:
+  config                Path to write TOML config
+
+options:
+  -h, --help            show this help message and exit
+  --toml-credentials TOML_CREDENTIALS, -t TOML_CREDENTIALS
+                        Path to write TOML file for credentials. Will be
+                        populated by CATMAID_* environment variables if set.
+  --env-credentials ENV_CREDENTIALS, -e ENV_CREDENTIALS
+                        Path to write env file for credentials. Will be
+                        populated by CATMAID_* environment variables if set.
+  --no-http-basic, -H   Omit HTTP basic auth from credentials file.
+  --no-token, -T        Omit CATMAID API token from credentials file.
+</code></pre>
 <h3 id="configuration">Configuration</h3>
-<p>Copy <code>data/example_config.toml</code> and fill in the fields describing which data you want to export.</p>
+<p>Fill in the config file using <a href="https://toml.io/en/">TOML formatting</a>.</p>
 <p>Citation information will be included with the export.
 Project information will be used to connect to CATMAID (but sensitive credentials should be stored elsewhere).</p>
 <p>For other data types, <code>all = true</code> means export all data of that type.
-Note that this can take a very long time for common data types (e.g. skeletons) in large projects.
+Note that this can take a very long time for common data types (e.g. neurons) in large projects.
 If <code>all = false</code>, you can list the names of specific objects to be exported.
 You can also rename specific objects by mapping the old name to the new one (objects to be renamed will be added to the list of objects to export).</p>
 <p>Some objects can be annotated.
-In this case, you can instead list annotations for which directly annotated objects will be exported.
-Indirectly annotated ("sub-annotated") objects, e.g. the relationship between A and C in <code>annotation "A" -&gt; annotation "B" -&gt; skeleton "C"</code> will not be exported.</p>
+In this case, you can instead list annotations for which annotated objects will be exported.
+Indirectly annotated ("sub-annotated") objects, e.g. the relationship between A and C in <code>annotation "A" -&gt; annotation "B" -&gt; skeleton "C"</code> will also be exported.</p>
+<p>All exported data have a pre-written <code>README.md</code> file detailing the data format and structure.
+You can add additional information to the README using the <code>readme_footer</code> key.
+This string will have leading and trailing whitespace stripped, and, if still non-empty, will be appended to the default README below a thematic break.</p>
 <h3 id="authentication">Authentication</h3>
-<p>If your CATMAID instance requires authentication (with a CATMAID account and/or HTTP Basic authentication), fill in these details in a separate TOML file, or as environment variables.
-Examples are in the <code>credentials/</code> directory: copy these files before filling in your own details.</p>
-<p>Passwords, API tokens etc. <strong>MUST NOT</strong> be tracked with git.
-Files in the <code>credentials/</code> directory are ignored by git (except the example files), so this is a good place to keep them.</p>
+<p>If your CATMAID instance requires authentication (with a CATMAID account and/or HTTP Basic authentication), fill in these details in a separate TOML file, or as environment variables (which can be loaded from a shell script file).</p>
+<p>Passwords, API tokens etc. <strong>MUST NOT</strong> be tracked with git.</p>
 <h3 id="catmaid_publish_1"><code><a title="catmaid_publish" href="#catmaid_publish">catmaid_publish</a></code></h3>
-<p>Once this config file is written, use the <code><a title="catmaid_publish" href="#catmaid_publish">catmaid_publish</a></code> command to fetch and write the data, e.g.</p>
+<p>Once you have filled in the config file, use the <code><a title="catmaid_publish" href="#catmaid_publish">catmaid_publish</a></code> command to fetch and write the data, e.g.</p>
 <pre><code class="language-sh">catmaid_publish path/to/config.toml path/to/output_dir path/to/credentials.toml
 </code></pre>
 <p>Full usage details are here:</p>
@@ -101,26 +129,41 @@ neuron: navis.TreeNeuron = reader.neurons.get_by_name(
 landmark_locations: list[Location] = list(reader.landmarks.get_all())
 volume: navis.Volume = reader.volumes.get_by_name(&quot;my volume&quot;)
 </code></pre>
+<h3 id="tips">Tips</h3>
+<p>In general, it's most robust to use the CATMAID UI to make an annotation specifically for your export; ideally namespaced and timestamped (e.g. <code>cbarnes_export_2023-02-15</code>).
+Later exports can be a superset of this one.</p>
+<h4 id="publication">Publication</h4>
+<p>Consider running the export once to find which objects are exported,
+and determine whether any objects need renaming.
+Then update your configuration with these renames.</p>
+<h4 id="analysis-snapshot">Analysis snapshot</h4>
+<p>In large CATMAID projects, there are relatively few landmarks, volumes, and annotations compared to skeletons.
+As these are all helpful for mining data, consider exporting with <code>all = true</code> for everything except skeletons.
+Use the CATMAID UI (e.g. connectivity widget, graph widget, volume intersection) to annotate a superset of your skeletons of interest for the export.</p>
+<p>It is easier to bounce between local analysis and use of the CATMAID UI if you do not rename any objects in this case.</p>
 <h2 id="containerisation">Containerisation</h2>
 <p>This project can be containerised with <a href="https://apptainer.org/docs/user/main/quick_start.html">apptainer</a> (formerly called Singularity)
 (bundling it with a python environment and full OS) on linux,
 so that it can be run on any system with apptainer installed.</p>
 <p>Just run <code>make container</code> (requires sudo).</p>
-<p>The python files are installed in the container at <code>/project</code>.
-To improve container size and flexibility, the <code>./data/</code> directory is not included.
-To improve flexibility and security, the <code>./credentials/</code> directory is not included.</p>
-<p>You can <a href="https://apptainer.org/docs/user/main/bind_paths_and_mounts.html">bind mount</a> these directories inside the container at runtime:</p>
+<p>The python files are installed in the container at <code>/project</code>.</p>
+<p>Depending on where your config and credentials files are stored, they may be <a href="https://apptainer.org/docs/user/main/bind_paths_and_mounts.html#system-defined-bind-paths">accessible to the container by default</a>.
+Otherwise, you can manually <a href="https://apptainer.org/docs/user/main/bind_paths_and_mounts.html">bind mount</a> the containing directories inside the container at runtime:</p>
 <pre><code class="language-sh"># Find the data path your environment is using, defaulting to the local ./data
-DATA_PATH=&quot;${CATMAID_PUBLISH_DATA:-$(pwd)/data}&quot;
+DATA_PATH=&quot;$(pwd)/data&quot;
 CREDS_PATH=&quot;$(pwd)/credentials&quot;
 
 # Execute the command `/bin/bash` (i.e. get a terminal inside the container),
 # mounting the data directory and credentials you're already using.
 # Container file (.sif) must already be built
 apptainer exec \
-    --bind &quot;$DATA_PATH:/project/data&quot; \
-    --bind &quot;$CREDS_PATH:/project/credentials&quot; \
+    --bind &quot;$DATA_PATH:/data&quot; \
+    --bind &quot;$CREDS_PATH:/credentials&quot; \
     catmaid_publish.sif /bin/bash
+
+# Now you're inside the container...
+&gt;&gt;&gt; catmaid_publish_init /data/config.toml -t /credentials/my_instance.toml
+&gt;&gt;&gt; catmaid_publish /data/config.toml /data/my_export /credentials/my_instance.toml
 </code></pre>
 <details class="source">
 <summary>
@@ -167,6 +210,10 @@ __all__ = [
 <dt><code class="name"><a title="catmaid_publish.constants" href="constants.html">catmaid_publish.constants</a></code></dt>
 <dd>
 <div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="catmaid_publish.initialise" href="initialise.html">catmaid_publish.initialise</a></code></dt>
+<dd>
+<div class="desc"><p>Write an empty config file and, optionally, credentials files.</p></div>
 </dd>
 <dt><code class="name"><a title="catmaid_publish.io_helpers" href="io_helpers.html">catmaid_publish.io_helpers</a></code></dt>
 <dd>
@@ -294,7 +341,11 @@ __all__ = [
         tomli_w.dump(meta, f, multiline_strings=multiline_strings)
 
     with open(out_dir / &#34;README.md&#34;, &#34;w&#34;) as f:
-        f.write(README)</code></pre>
+        readme = join_markdown(
+            README,
+            project.get(README_FOOTER_KEY),
+        )
+        f.write(readme)</code></pre>
 </details>
 </dd>
 </dl>
@@ -329,6 +380,7 @@ __all__ = [
         &#34;&#34;&#34;
         self.dpath = dpath
 
+    @copy_cache()
     def get_graph(self) -&gt; nx.DiGraph:
         &#34;&#34;&#34;Return the saved graph of text annotations.
 
@@ -372,7 +424,8 @@ all edges have attributes <code>meta_annotation=True</code>.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_graph(self) -&gt; nx.DiGraph:
+<pre><code class="python">@copy_cache()
+def get_graph(self) -&gt; nx.DiGraph:
     &#34;&#34;&#34;Return the saved graph of text annotations.
 
     Returns
@@ -484,9 +537,9 @@ all edges have attributes <code>meta_annotation=True</code>.</dd>
     def get_metadata(self, *keys: str, default=NO_DEFAULT):
         &#34;&#34;&#34;Get values from nested metadata dict.
 
-        e.g. to retrieve ``myvalue`` from metadata like
+        e.g. to retrieve possibly-absent ``myvalue`` from metadata like
         ``{&#34;A&#34;: {&#34;B&#34;: myvalue}}``, use
-        ``my_reader.get_metadata(&#34;A&#34;, &#34;B&#34;)``.
+        ``my_reader.get_metadata(&#34;A&#34;, &#34;B&#34;, default=None)``.
 
         Parameters
         ----------
@@ -587,9 +640,9 @@ Edges have a boolean attribute <code>"meta_annotation"</code>
 </code></dt>
 <dd>
 <div class="desc"><p>Get values from nested metadata dict.</p>
-<p>e.g. to retrieve <code>myvalue</code> from metadata like
+<p>e.g. to retrieve possibly-absent <code>myvalue</code> from metadata like
 <code>{"A": {"B": myvalue}}</code>, use
-<code>my_reader.get_metadata("A", "B")</code>.</p>
+<code>my_reader.get_metadata("A", "B", default=None)</code>.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>*keys</code></strong> :&ensp;<code>str</code></dt>
@@ -615,9 +668,9 @@ By default, raises a <code>KeyError</code>.</dd>
 <pre><code class="python">def get_metadata(self, *keys: str, default=NO_DEFAULT):
     &#34;&#34;&#34;Get values from nested metadata dict.
 
-    e.g. to retrieve ``myvalue`` from metadata like
+    e.g. to retrieve possibly-absent ``myvalue`` from metadata like
     ``{&#34;A&#34;: {&#34;B&#34;: myvalue}}``, use
-    ``my_reader.get_metadata(&#34;A&#34;, &#34;B&#34;)``.
+    ``my_reader.get_metadata(&#34;A&#34;, &#34;B&#34;, default=None)``.
 
     Parameters
     ----------
@@ -685,7 +738,7 @@ By default, raises a <code>KeyError</code>.</dd>
         self.dpath = dpath
         self.fpath = dpath / &#34;locations.json&#34;
 
-    @lru_cache
+    @copy_cache()
     def _locations(self):
         with open(self.fpath) as f:
             d = json.load(f)
@@ -1177,17 +1230,19 @@ Metadata is always populated.</p>
         self.units = units
         self.default_read_spec = ReadSpec(*read_spec)
 
-    @lru_cache
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_meta(self, dpath):
         return json.loads((dpath / &#34;metadata.json&#34;).read_text())
 
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_nodes(self, dpath):
         return pd.read_csv(dpath / &#34;nodes.tsv&#34;, sep=&#34;\t&#34;)
 
-    @lru_cache
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_tags(self, dpath):
         return json.loads((dpath / &#34;tags.json&#34;).read_text())
 
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_connectors(self, dpath):
         conns = pd.read_csv(dpath / &#34;connectors.tsv&#34;, sep=&#34;\t&#34;)
         conns.rename(columns={&#34;is_input&#34;: &#34;type&#34;}, inplace=True)
@@ -1335,18 +1390,14 @@ Metadata is always populated.</p>
         return set(d)
 
     def get_annotation_graph(self) -&gt; nx.DiGraph:
-        &#34;&#34;&#34;Return graph of neurons and their annotations.
-
-        Parameters
-        ----------
-        with_neuron_data : bool or ReadSpec, optional
-            If False (default), do not read the full neuron data.
+        &#34;&#34;&#34;Return graph of neuron annotations.
 
         Returns
         -------
         nx.DiGraph
             Edges are from annotations to neuron names.
-            All nodes have attribute ``&#34;type&#34;``, which is either ``&#34;neuron&#34;`` or ``&#34;annotation&#34;``.
+            All nodes have attribute ``&#34;type&#34;``,
+            which is either ``&#34;neuron&#34;`` or ``&#34;annotation&#34;``.
             All edges have attribute ``&#34;meta_annotation&#34;=False``.
         &#34;&#34;&#34;
         g = nx.DiGraph()
@@ -1370,6 +1421,13 @@ Metadata is always populated.</p>
         self, read_spec: Optional[ReadSpec] = None
     ) -&gt; Iterable[navis.TreeNeuron]:
         &#34;&#34;&#34;Lazily iterate through neurons in arbitrary order.
+
+        Can be used for filtering neurons based on some metadata, e.g.
+
+            lefts = []
+            for nrn in my_reader.get_all(ReadSpec(False, False, False)):
+                if &#34;left&#34; in nrn.name:
+                    lefts.append(my_reader.get_by_id(nrn.id)))
 
         Yields
         ------
@@ -1418,6 +1476,12 @@ def annotation_to_ids(self) -&gt; dict[str, list[int]]:
 </code></dt>
 <dd>
 <div class="desc"><p>Lazily iterate through neurons in arbitrary order.</p>
+<p>Can be used for filtering neurons based on some metadata, e.g.</p>
+<pre><code>lefts = []
+for nrn in my_reader.get_all(ReadSpec(False, False, False)):
+    if "left" in nrn.name:
+        lefts.append(my_reader.get_by_id(nrn.id)))
+</code></pre>
 <h2 id="yields">Yields</h2>
 <dl>
 <dt><code>navis.TreeNeuron</code></dt>
@@ -1432,6 +1496,13 @@ def annotation_to_ids(self) -&gt; dict[str, list[int]]:
 ) -&gt; Iterable[navis.TreeNeuron]:
     &#34;&#34;&#34;Lazily iterate through neurons in arbitrary order.
 
+    Can be used for filtering neurons based on some metadata, e.g.
+
+        lefts = []
+        for nrn in my_reader.get_all(ReadSpec(False, False, False)):
+            if &#34;left&#34; in nrn.name:
+                lefts.append(my_reader.get_by_id(nrn.id)))
+
     Yields
     ------
     navis.TreeNeuron
@@ -1444,17 +1515,13 @@ def annotation_to_ids(self) -&gt; dict[str, list[int]]:
 <span>def <span class="ident">get_annotation_graph</span></span>(<span>self) ‑> networkx.classes.digraph.DiGraph</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Return graph of neurons and their annotations.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>with_neuron_data</code></strong> :&ensp;<code>bool</code> or <code><a title="catmaid_publish.ReadSpec" href="#catmaid_publish.ReadSpec">ReadSpec</a></code>, optional</dt>
-<dd>If False (default), do not read the full neuron data.</dd>
-</dl>
+<div class="desc"><p>Return graph of neuron annotations.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>nx.DiGraph</code></dt>
 <dd>Edges are from annotations to neuron names.
-All nodes have attribute <code>"type"</code>, which is either <code>"neuron"</code> or <code>"annotation"</code>.
+All nodes have attribute <code>"type"</code>,
+which is either <code>"neuron"</code> or <code>"annotation"</code>.
 All edges have attribute <code>"meta_annotation"=False</code>.</dd>
 </dl></div>
 <details class="source">
@@ -1462,18 +1529,14 @@ All edges have attribute <code>"meta_annotation"=False</code>.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_annotation_graph(self) -&gt; nx.DiGraph:
-    &#34;&#34;&#34;Return graph of neurons and their annotations.
-
-    Parameters
-    ----------
-    with_neuron_data : bool or ReadSpec, optional
-        If False (default), do not read the full neuron data.
+    &#34;&#34;&#34;Return graph of neuron annotations.
 
     Returns
     -------
     nx.DiGraph
         Edges are from annotations to neuron names.
-        All nodes have attribute ``&#34;type&#34;``, which is either ``&#34;neuron&#34;`` or ``&#34;annotation&#34;``.
+        All nodes have attribute ``&#34;type&#34;``,
+        which is either ``&#34;neuron&#34;`` or ``&#34;annotation&#34;``.
         All edges have attribute ``&#34;meta_annotation&#34;=False``.
     &#34;&#34;&#34;
     g = nx.DiGraph()
@@ -1728,6 +1791,7 @@ def name_to_id(self) -&gt; dict[str, int]:
     def _dict(self, keys, values):
         return df_to_dict(self.names_df, keys, values)
 
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_vol(
         self, fpath: Path, name: Optional[str], volume_id: Optional[int]
     ) -&gt; navis.Volume:
@@ -1937,11 +2001,17 @@ def names_df(self) -&gt; pd.DataFrame:
 <li><a href="#catmaid_publish">catmaid_publish</a><ul>
 <li><a href="#installation">Installation</a></li>
 <li><a href="#usage">Usage</a><ul>
+<li><a href="#catmaid_publish_init">catmaid_publish_init</a></li>
 <li><a href="#configuration">Configuration</a></li>
 <li><a href="#authentication">Authentication</a></li>
 <li><a href="#catmaid_publish_1">catmaid_publish</a></li>
 <li><a href="#output">Output</a><ul>
 <li><a href="#reading">Reading</a></li>
+</ul>
+</li>
+<li><a href="#tips">Tips</a><ul>
+<li><a href="#publication">Publication</a></li>
+<li><a href="#analysis-snapshot">Analysis snapshot</a></li>
 </ul>
 </li>
 </ul>
@@ -1956,6 +2026,7 @@ def names_df(self) -&gt; pd.DataFrame:
 <ul>
 <li><code><a title="catmaid_publish.annotations" href="annotations.html">catmaid_publish.annotations</a></code></li>
 <li><code><a title="catmaid_publish.constants" href="constants.html">catmaid_publish.constants</a></code></li>
+<li><code><a title="catmaid_publish.initialise" href="initialise.html">catmaid_publish.initialise</a></code></li>
 <li><code><a title="catmaid_publish.io_helpers" href="io_helpers.html">catmaid_publish.io_helpers</a></code></li>
 <li><code><a title="catmaid_publish.landmarks" href="landmarks.html">catmaid_publish.landmarks</a></code></li>
 <li><code><a title="catmaid_publish.main" href="main.html">catmaid_publish.main</a></code></li>

@@ -33,22 +33,50 @@ from typing import Optional
 import networkx as nx
 import pymaid
 
-from .utils import fill_in_dict
+from .utils import copy_cache, descendants, fill_in_dict
 
 
-def descendants(g: nx.DiGraph, roots: list[str], max_depth=None):
-    &#34;&#34;&#34;Find all descendant nodes from given roots, to a given depth.&#34;&#34;&#34;
-    out = set()
-    to_visit: list[tuple[str, int]] = [(r, 0) for r in roots]
-    while to_visit:
-        node, depth = to_visit.pop()
-        if node in out:
-            continue
-        out.add(node)
-        if max_depth is not None and depth &gt;= max_depth:
-            continue
-        to_visit.extend((n, depth + 1) for n in g.successors(node))
-    return out
+@copy_cache(maxsize=None)
+def annotation_graph() -&gt; nx.DiGraph:
+    return pymaid.get_annotation_graph()
+
+
+def sub_annotations(annotations: list[str], include_roots=True, max_depth=None):
+    &#34;&#34;&#34;Get all descendant annotations of the given annotations.
+
+    Parameters
+    ----------
+    annotations : list[str]
+        Root annotations.
+    include_roots : bool, optional
+        Whether to include the given roots, by default True.
+        If False, will only prune roots which have no parents,
+        e.g. a root will be kept if it is annotated by another root.
+    max_depth : int, optional
+        Maximum depth of descendants, by default None (full depth).
+
+    Returns
+    -------
+    set[str]
+        Set of annotations descended from the given roots.
+    &#34;&#34;&#34;
+    g = annotation_graph()
+    skels = {n for n, d in g.nodes(data=True) if d.get(&#34;is_skeleton&#34;)}
+    g.remove_nodes_from(skels)
+
+    nodes = descendants(g, annotations, max_depth)
+    sub: nx.DiGraph = g.subgraph(nodes).copy()
+
+    if not include_roots:
+        to_remove = set()
+        for ann in annotations:
+            preds = list(sub.predecessors(ann))
+            if not preds:
+                to_remove.add(ann)
+
+        sub.remove_nodes_from(to_remove)
+
+    return sub
 
 
 def get_annotations(
@@ -74,7 +102,7 @@ def get_annotations(
         to its (renamed) sub-annotations.
         Second element is the complete dict of renames ``{old: new}``.
     &#34;&#34;&#34;
-    g = pymaid.get_annotation_graph()
+    g = annotation_graph()
     skels = {n for n, d in g.nodes(data=True) if d.get(&#34;is_skeleton&#34;)}
     g.remove_nodes_from(skels)
 
@@ -94,7 +122,7 @@ def get_annotations(
 
 
 def write_annotation_graph(fpath: Path, annotations: dict[str, list[str]]):
-    &#34;&#34;&#34;Write annotation graph as JSON ``{parent: children}``.
+    &#34;&#34;&#34;Write annotation graph as JSON ``{parent: [child1, ...]}``.
 
     Parameters
     ----------
@@ -106,18 +134,6 @@ def write_annotation_graph(fpath: Path, annotations: dict[str, list[str]]):
     fpath.parent.mkdir(exist_ok=True, parents=True)
     with open(fpath, &#34;w&#34;) as f:
         json.dump(annotations, f, indent=2, sort_keys=True)
-
-
-def read_annotation_graph(fpath):
-    with open(fpath) as f:
-        d = json.load(f)
-
-    g = nx.DiGraph()
-    for u, vs in d.items():
-        for v in vs:
-            g.add_edge(u, v)
-
-    return g
 
 
 class AnnotationReader:
@@ -132,6 +148,7 @@ class AnnotationReader:
         &#34;&#34;&#34;
         self.dpath = dpath
 
+    @copy_cache()
     def get_graph(self) -&gt; nx.DiGraph:
         &#34;&#34;&#34;Return the saved graph of text annotations.
 
@@ -182,28 +199,18 @@ the value is the list of annotations of interest annotated by that key.
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="catmaid_publish.annotations.descendants"><code class="name flex">
-<span>def <span class="ident">descendants</span></span>(<span>g: networkx.classes.digraph.DiGraph, roots: list[str], max_depth=None)</span>
+<dt id="catmaid_publish.annotations.annotation_graph"><code class="name flex">
+<span>def <span class="ident">annotation_graph</span></span>(<span>) ‑> networkx.classes.digraph.DiGraph</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Find all descendant nodes from given roots, to a given depth.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def descendants(g: nx.DiGraph, roots: list[str], max_depth=None):
-    &#34;&#34;&#34;Find all descendant nodes from given roots, to a given depth.&#34;&#34;&#34;
-    out = set()
-    to_visit: list[tuple[str, int]] = [(r, 0) for r in roots]
-    while to_visit:
-        node, depth = to_visit.pop()
-        if node in out:
-            continue
-        out.add(node)
-        if max_depth is not None and depth &gt;= max_depth:
-            continue
-        to_visit.extend((n, depth + 1) for n in g.successors(node))
-    return out</code></pre>
+<pre><code class="python">@copy_cache(maxsize=None)
+def annotation_graph() -&gt; nx.DiGraph:
+    return pymaid.get_annotation_graph()</code></pre>
 </details>
 </dd>
 <dt id="catmaid_publish.annotations.get_annotations"><code class="name flex">
@@ -256,7 +263,7 @@ Second element is the complete dict of renames <code>{old: new}</code>.</dd>
         to its (renamed) sub-annotations.
         Second element is the complete dict of renames ``{old: new}``.
     &#34;&#34;&#34;
-    g = pymaid.get_annotation_graph()
+    g = annotation_graph()
     skels = {n for n, d in g.nodes(data=True) if d.get(&#34;is_skeleton&#34;)}
     g.remove_nodes_from(skels)
 
@@ -275,32 +282,74 @@ Second element is the complete dict of renames <code>{old: new}</code>.</dd>
     return out, rename</code></pre>
 </details>
 </dd>
-<dt id="catmaid_publish.annotations.read_annotation_graph"><code class="name flex">
-<span>def <span class="ident">read_annotation_graph</span></span>(<span>fpath)</span>
+<dt id="catmaid_publish.annotations.sub_annotations"><code class="name flex">
+<span>def <span class="ident">sub_annotations</span></span>(<span>annotations: list[str], include_roots=True, max_depth=None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Get all descendant annotations of the given annotations.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>annotations</code></strong> :&ensp;<code>list[str]</code></dt>
+<dd>Root annotations.</dd>
+<dt><strong><code>include_roots</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Whether to include the given roots, by default True.
+If False, will only prune roots which have no parents,
+e.g. a root will be kept if it is annotated by another root.</dd>
+<dt><strong><code>max_depth</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Maximum depth of descendants, by default None (full depth).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>set[str]</code></dt>
+<dd>Set of annotations descended from the given roots.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def read_annotation_graph(fpath):
-    with open(fpath) as f:
-        d = json.load(f)
+<pre><code class="python">def sub_annotations(annotations: list[str], include_roots=True, max_depth=None):
+    &#34;&#34;&#34;Get all descendant annotations of the given annotations.
 
-    g = nx.DiGraph()
-    for u, vs in d.items():
-        for v in vs:
-            g.add_edge(u, v)
+    Parameters
+    ----------
+    annotations : list[str]
+        Root annotations.
+    include_roots : bool, optional
+        Whether to include the given roots, by default True.
+        If False, will only prune roots which have no parents,
+        e.g. a root will be kept if it is annotated by another root.
+    max_depth : int, optional
+        Maximum depth of descendants, by default None (full depth).
 
-    return g</code></pre>
+    Returns
+    -------
+    set[str]
+        Set of annotations descended from the given roots.
+    &#34;&#34;&#34;
+    g = annotation_graph()
+    skels = {n for n, d in g.nodes(data=True) if d.get(&#34;is_skeleton&#34;)}
+    g.remove_nodes_from(skels)
+
+    nodes = descendants(g, annotations, max_depth)
+    sub: nx.DiGraph = g.subgraph(nodes).copy()
+
+    if not include_roots:
+        to_remove = set()
+        for ann in annotations:
+            preds = list(sub.predecessors(ann))
+            if not preds:
+                to_remove.add(ann)
+
+        sub.remove_nodes_from(to_remove)
+
+    return sub</code></pre>
 </details>
 </dd>
 <dt id="catmaid_publish.annotations.write_annotation_graph"><code class="name flex">
 <span>def <span class="ident">write_annotation_graph</span></span>(<span>fpath: pathlib.Path, annotations: dict[str, list[str]])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Write annotation graph as JSON <code>{parent: children}</code>.</p>
+<div class="desc"><p>Write annotation graph as JSON <code>{parent: [child1, ...]}</code>.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>fpath</code></strong> :&ensp;<code>Path</code></dt>
@@ -313,7 +362,7 @@ Second element is the complete dict of renames <code>{old: new}</code>.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def write_annotation_graph(fpath: Path, annotations: dict[str, list[str]]):
-    &#34;&#34;&#34;Write annotation graph as JSON ``{parent: children}``.
+    &#34;&#34;&#34;Write annotation graph as JSON ``{parent: [child1, ...]}``.
 
     Parameters
     ----------
@@ -359,6 +408,7 @@ Second element is the complete dict of renames <code>{old: new}</code>.</dd>
         &#34;&#34;&#34;
         self.dpath = dpath
 
+    @copy_cache()
     def get_graph(self) -&gt; nx.DiGraph:
         &#34;&#34;&#34;Return the saved graph of text annotations.
 
@@ -402,7 +452,8 @@ all edges have attributes <code>meta_annotation=True</code>.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_graph(self) -&gt; nx.DiGraph:
+<pre><code class="python">@copy_cache()
+def get_graph(self) -&gt; nx.DiGraph:
     &#34;&#34;&#34;Return the saved graph of text annotations.
 
     Returns
@@ -445,9 +496,9 @@ all edges have attributes <code>meta_annotation=True</code>.</dd>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="catmaid_publish.annotations.descendants" href="#catmaid_publish.annotations.descendants">descendants</a></code></li>
+<li><code><a title="catmaid_publish.annotations.annotation_graph" href="#catmaid_publish.annotations.annotation_graph">annotation_graph</a></code></li>
 <li><code><a title="catmaid_publish.annotations.get_annotations" href="#catmaid_publish.annotations.get_annotations">get_annotations</a></code></li>
-<li><code><a title="catmaid_publish.annotations.read_annotation_graph" href="#catmaid_publish.annotations.read_annotation_graph">read_annotation_graph</a></code></li>
+<li><code><a title="catmaid_publish.annotations.sub_annotations" href="#catmaid_publish.annotations.sub_annotations">sub_annotations</a></code></li>
 <li><code><a title="catmaid_publish.annotations.write_annotation_graph" href="#catmaid_publish.annotations.write_annotation_graph">write_annotation_graph</a></code></li>
 </ul>
 </li>
