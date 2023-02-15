@@ -36,6 +36,7 @@ jobs:
           pip install .
         name: Install package
       - run: pytest --verbose
+      - run: catmaid_publish_init /tmp/config.toml -e /tmp/creds.env -t /tmp/creds.toml
 
   container:
     runs-on: ubuntu-22.04

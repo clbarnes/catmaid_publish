@@ -31,12 +31,13 @@ container:
 
 .PHONY: readme
 readme:
-	catmaid_publish --help | p2c --tgt _catmaid_publish README.md
+	catmaid_publish --help | p2c --tgt _catmaid_publish README.md && \
+	catmaid_publish_init --help | p2c --tgt _catmaid_publish_init README.md
 
 .PHONY: clean-docs
 clean-docs:
 	rm -rf docs/catmaid_publish
 
 .PHONY: docs
-docs: clean-docs
+docs: clean-docs readme
 	pdoc3 --html --output-dir docs/ catmaid_publish

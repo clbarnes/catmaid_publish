@@ -34,15 +34,46 @@ pip install -e .
 
 ## Usage
 
+`catmaid_publish` fetches data from a CATMAID instance based on a configuration file.
+If the instance requires authentication, credentials can be passed with environment variables or a separate TOML file.
+
+### `catmaid_publish_init`
+
+Use this to initialise an empty config and optional credentials files.
+If you have already set your credentials using environment variables starting with `CATMAID_`, the credentials files will be filled in.
+
+```_catmaid_publish_init
+usage: catmaid_publish_init [-h] [--toml-credentials TOML_CREDENTIALS]
+                            [--env-credentials ENV_CREDENTIALS]
+                            [--no-http-basic] [--no-token]
+                            config
+
+Write an empty config file and, optionally, credentials files.
+
+positional arguments:
+  config                Path to write TOML config
+
+options:
+  -h, --help            show this help message and exit
+  --toml-credentials TOML_CREDENTIALS, -t TOML_CREDENTIALS
+                        Path to write TOML file for credentials. Will be
+                        populated by CATMAID_* environment variables if set.
+  --env-credentials ENV_CREDENTIALS, -e ENV_CREDENTIALS
+                        Path to write env file for credentials. Will be
+                        populated by CATMAID_* environment variables if set.
+  --no-http-basic, -H   Omit HTTP basic auth from credentials file.
+  --no-token, -T        Omit CATMAID API token from credentials file.
+```
+
 ### Configuration
 
-Copy `data/example_config.toml` and fill in the fields describing which data you want to export.
+Fill in the config file using [TOML formatting](https://toml.io/en/).
 
 Citation information will be included with the export.
 Project information will be used to connect to CATMAID (but sensitive credentials should be stored elsewhere).
 
 For other data types, `all = true` means export all data of that type.
-Note that this can take a very long time for common data types (e.g. skeletons) in large projects.
+Note that this can take a very long time for common data types (e.g. neurons) in large projects.
 If `all = false`, you can list the names of specific objects to be exported.
 You can also rename specific objects by mapping the old name to the new one (objects to be renamed will be added to the list of objects to export).
 
@@ -56,15 +87,13 @@ This string will have leading and trailing whitespace stripped, and, if still no
 
 ### Authentication
 
-If your CATMAID instance requires authentication (with a CATMAID account and/or HTTP Basic authentication), fill in these details in a separate TOML file, or as environment variables.
-Examples are in the `credentials/` directory: copy these files before filling in your own details.
+If your CATMAID instance requires authentication (with a CATMAID account and/or HTTP Basic authentication), fill in these details in a separate TOML file, or as environment variables (which can be loaded from a shell script file).
 
 Passwords, API tokens etc. **MUST NOT** be tracked with git.
-Files in the `credentials/` directory are ignored by git (except the example files), so this is a good place to keep them.
 
 ### `catmaid_publish`
 
-Once this config file is written, use the `catmaid_publish` command to fetch and write the data, e.g.
+Once you have filled in the config file, use the `catmaid_publish` command to fetch and write the data, e.g.
 
 ```sh
 catmaid_publish path/to/config.toml path/to/output_dir path/to/credentials.toml
@@ -144,22 +173,24 @@ so that it can be run on any system with apptainer installed.
 Just run `make container` (requires sudo).
 
 The python files are installed in the container at `/project`.
-To improve container size and flexibility, the `./data/` directory is not included.
-To improve flexibility and security, the `./credentials/` directory is not included.
 
-Depending on where this directory is stored, it may be [accessible to the container by default](https://apptainer.org/docs/user/main/bind_paths_and_mounts.html#system-defined-bind-paths).
-Otherwise, you can manually [bind mount](https://apptainer.org/docs/user/main/bind_paths_and_mounts.html) these directories inside the container at runtime:
+Depending on where your config and credentials files are stored, they may be [accessible to the container by default](https://apptainer.org/docs/user/main/bind_paths_and_mounts.html#system-defined-bind-paths).
+Otherwise, you can manually [bind mount](https://apptainer.org/docs/user/main/bind_paths_and_mounts.html) the containing directories inside the container at runtime:
 
 ```sh
 # Find the data path your environment is using, defaulting to the local ./data
-DATA_PATH="${CATMAID_PUBLISH_DATA:-$(pwd)/data}"
+DATA_PATH="$(pwd)/data"
 CREDS_PATH="$(pwd)/credentials"
 
 # Execute the command `/bin/bash` (i.e. get a terminal inside the container),
 # mounting the data directory and credentials you're already using.
 # Container file (.sif) must already be built
 apptainer exec \
-    --bind "$DATA_PATH:/project/data" \
-    --bind "$CREDS_PATH:/project/credentials" \
+    --bind "$DATA_PATH:/data" \
+    --bind "$CREDS_PATH:/credentials" \
     catmaid_publish.sif /bin/bash
+
+# Now you're inside the container...
+>>> catmaid_publish_init /data/config.toml -t /credentials/my_instance.toml
+>>> catmaid_publish /data/config.toml /data/my_export /credentials/my_instance.toml
 ```
