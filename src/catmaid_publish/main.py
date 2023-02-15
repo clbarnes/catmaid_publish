@@ -67,7 +67,7 @@ def publish_annotations(config: Config, out_dir: Path, pbar=None):
 def publish_skeletons(config: Config, out_dir, ann_renames, pbar=None):
     if pbar is not None:
         pbar.set_description("Handling skeletons")
-    skel_conf = config.get("skeletons", default=Config())
+    skel_conf = config.get("neurons", default=Config())
     tag_conf = skel_conf.get("tags", default=Config())
     skel_dir = out_dir / "neurons"
 

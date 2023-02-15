@@ -30,14 +30,14 @@ names = []
 rename = {}
 readme_footer = ""
 
-[skeletons]
+[neurons]
 all = false
 annotated = []
 names = []
 rename = {}
 readme_footer = ""
 
-[skeletons.tags]
+[neurons.tags]
 all = false
 names = []
 rename = {}

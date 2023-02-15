@@ -79,7 +79,7 @@ You can also rename specific objects by mapping the old name to the new one (obj
 
 Some objects can be annotated.
 In this case, you can instead list annotations for which annotated objects will be exported.
-Indirectly annotated ("sub-annotated") objects, e.g. the relationship between A and C in `annotation "A" -> annotation "B" -> skeleton "C"` will also be exported.
+Indirectly annotated ("sub-annotated") objects, e.g. the relationship between A and C in `annotation "A" -> annotation "B" -> neuron "C"` will also be exported.
 
 All exported data have a pre-written `README.md` file detailing the data format and structure.
 You can add additional information to the README using the `readme_footer` key.
@@ -158,9 +158,9 @@ Then update your configuration with these renames.
 
 #### Analysis snapshot
 
-In large CATMAID projects, there are relatively few landmarks, volumes, and annotations compared to skeletons.
-As these are all helpful for mining data, consider exporting with `all = true` for everything except skeletons.
-Use the CATMAID UI (e.g. connectivity widget, graph widget, volume intersection) to annotate a superset of your skeletons of interest for the export.
+In large CATMAID projects, there are relatively few landmarks, volumes, and annotations compared to neurons.
+As these are all helpful for mining data, consider exporting with `all = true` for everything except neurons.
+Use the CATMAID UI (e.g. connectivity widget, graph widget, volume intersection) to annotate a superset of your neurons of interest for the export.
 
 It is easier to bounce between local analysis and use of the CATMAID UI if you do not rename any objects in this case.
 

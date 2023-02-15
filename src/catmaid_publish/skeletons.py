@@ -83,7 +83,7 @@ def get_skeletons(
         anns = get_renamed_annotations(nrn, annotations_rename)
         meta = {
             "name": fn_or_none(nrn.name, str),
-            "id": int(nrn.id),
+            "skeleton_id": int(nrn.id),
             "soma_id": fn_or_none(nrn.soma, int),
             "annotations": sorted(anns),
         }
@@ -253,7 +253,7 @@ class SkeletonReader:
     def get_by_id(
         self, skeleton_id: int, read_spec: Optional[ReadSpec] = None
     ) -> navis.TreeNeuron:
-        """Read neuron with the given ID.
+        """Read neuron with the given skeleton ID.
 
         Parameters
         ----------

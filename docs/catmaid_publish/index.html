@@ -82,7 +82,7 @@ If <code>all = false</code>, you can list the names of specific objects to be ex
 You can also rename specific objects by mapping the old name to the new one (objects to be renamed will be added to the list of objects to export).</p>
 <p>Some objects can be annotated.
 In this case, you can instead list annotations for which annotated objects will be exported.
-Indirectly annotated ("sub-annotated") objects, e.g. the relationship between A and C in <code>annotation "A" -&gt; annotation "B" -&gt; skeleton "C"</code> will also be exported.</p>
+Indirectly annotated ("sub-annotated") objects, e.g. the relationship between A and C in <code>annotation "A" -&gt; annotation "B" -&gt; neuron "C"</code> will also be exported.</p>
 <p>All exported data have a pre-written <code>README.md</code> file detailing the data format and structure.
 You can add additional information to the README using the <code>readme_footer</code> key.
 This string will have leading and trailing whitespace stripped, and, if still non-empty, will be appended to the default README below a thematic break.</p>
@@ -137,9 +137,9 @@ Later exports can be a superset of this one.</p>
 and determine whether any objects need renaming.
 Then update your configuration with these renames.</p>
 <h4 id="analysis-snapshot">Analysis snapshot</h4>
-<p>In large CATMAID projects, there are relatively few landmarks, volumes, and annotations compared to skeletons.
-As these are all helpful for mining data, consider exporting with <code>all = true</code> for everything except skeletons.
-Use the CATMAID UI (e.g. connectivity widget, graph widget, volume intersection) to annotate a superset of your skeletons of interest for the export.</p>
+<p>In large CATMAID projects, there are relatively few landmarks, volumes, and annotations compared to neurons.
+As these are all helpful for mining data, consider exporting with <code>all = true</code> for everything except neurons.
+Use the CATMAID UI (e.g. connectivity widget, graph widget, volume intersection) to annotate a superset of your neurons of interest for the export.</p>
 <p>It is easier to bounce between local analysis and use of the CATMAID UI if you do not rename any objects in this case.</p>
 <h2 id="containerisation">Containerisation</h2>
 <p>This project can be containerised with <a href="https://apptainer.org/docs/user/main/quick_start.html">apptainer</a> (formerly called Singularity)
@@ -1292,7 +1292,7 @@ Metadata is always populated.</p>
     def get_by_id(
         self, skeleton_id: int, read_spec: Optional[ReadSpec] = None
     ) -&gt; navis.TreeNeuron:
-        &#34;&#34;&#34;Read neuron with the given ID.
+        &#34;&#34;&#34;Read neuron with the given skeleton ID.
 
         Parameters
         ----------
@@ -1625,7 +1625,7 @@ All edges have attribute <code>"meta_annotation"=False</code>.</dd>
 <span>def <span class="ident">get_by_id</span></span>(<span>self, skeleton_id: int, read_spec: Optional[<a title="catmaid_publish.skeletons.ReadSpec" href="skeletons.html#catmaid_publish.skeletons.ReadSpec">ReadSpec</a>] = None) ‑> navis.core.skeleton.TreeNeuron</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Read neuron with the given ID.</p>
+<div class="desc"><p>Read neuron with the given skeleton ID.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>skeleton_id</code></strong> :&ensp;<code>int</code></dt>
@@ -1643,7 +1643,7 @@ All edges have attribute <code>"meta_annotation"=False</code>.</dd>
 <pre><code class="python">def get_by_id(
     self, skeleton_id: int, read_spec: Optional[ReadSpec] = None
 ) -&gt; navis.TreeNeuron:
-    &#34;&#34;&#34;Read neuron with the given ID.
+    &#34;&#34;&#34;Read neuron with the given skeleton ID.
 
     Parameters
     ----------

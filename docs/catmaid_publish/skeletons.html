@@ -111,7 +111,7 @@ def get_skeletons(
         anns = get_renamed_annotations(nrn, annotations_rename)
         meta = {
             &#34;name&#34;: fn_or_none(nrn.name, str),
-            &#34;id&#34;: int(nrn.id),
+            &#34;skeleton_id&#34;: int(nrn.id),
             &#34;soma_id&#34;: fn_or_none(nrn.soma, int),
             &#34;annotations&#34;: sorted(anns),
         }
@@ -281,7 +281,7 @@ class SkeletonReader:
     def get_by_id(
         self, skeleton_id: int, read_spec: Optional[ReadSpec] = None
     ) -&gt; navis.TreeNeuron:
-        &#34;&#34;&#34;Read neuron with the given ID.
+        &#34;&#34;&#34;Read neuron with the given skeleton ID.
 
         Parameters
         ----------
@@ -603,7 +603,7 @@ A JSON file with miscellaneous data about the neuron, including:
         anns = get_renamed_annotations(nrn, annotations_rename)
         meta = {
             &#34;name&#34;: fn_or_none(nrn.name, str),
-            &#34;id&#34;: int(nrn.id),
+            &#34;skeleton_id&#34;: int(nrn.id),
             &#34;soma_id&#34;: fn_or_none(nrn.soma, int),
             &#34;annotations&#34;: sorted(anns),
         }
@@ -860,7 +860,7 @@ Metadata is always populated.</p>
     def get_by_id(
         self, skeleton_id: int, read_spec: Optional[ReadSpec] = None
     ) -&gt; navis.TreeNeuron:
-        &#34;&#34;&#34;Read neuron with the given ID.
+        &#34;&#34;&#34;Read neuron with the given skeleton ID.
 
         Parameters
         ----------
@@ -1193,7 +1193,7 @@ All edges have attribute <code>"meta_annotation"=False</code>.</dd>
 <span>def <span class="ident">get_by_id</span></span>(<span>self, skeleton_id: int, read_spec: Optional[<a title="catmaid_publish.skeletons.ReadSpec" href="#catmaid_publish.skeletons.ReadSpec">ReadSpec</a>] = None) ‑> navis.core.skeleton.TreeNeuron</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Read neuron with the given ID.</p>
+<div class="desc"><p>Read neuron with the given skeleton ID.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>skeleton_id</code></strong> :&ensp;<code>int</code></dt>
@@ -1211,7 +1211,7 @@ All edges have attribute <code>"meta_annotation"=False</code>.</dd>
 <pre><code class="python">def get_by_id(
     self, skeleton_id: int, read_spec: Optional[ReadSpec] = None
 ) -&gt; navis.TreeNeuron:
-    &#34;&#34;&#34;Read neuron with the given ID.
+    &#34;&#34;&#34;Read neuron with the given skeleton ID.
 
     Parameters
     ----------

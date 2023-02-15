@@ -96,7 +96,7 @@ def publish_annotations(config: Config, out_dir: Path, pbar=None):
 def publish_skeletons(config: Config, out_dir, ann_renames, pbar=None):
     if pbar is not None:
         pbar.set_description(&#34;Handling skeletons&#34;)
-    skel_conf = config.get(&#34;skeletons&#34;, default=Config())
+    skel_conf = config.get(&#34;neurons&#34;, default=Config())
     tag_conf = skel_conf.get(&#34;tags&#34;, default=Config())
     skel_dir = out_dir / &#34;neurons&#34;
 
@@ -550,7 +550,7 @@ if __name__ == &#34;__main__&#34;:
 <pre><code class="python">def publish_skeletons(config: Config, out_dir, ann_renames, pbar=None):
     if pbar is not None:
         pbar.set_description(&#34;Handling skeletons&#34;)
-    skel_conf = config.get(&#34;skeletons&#34;, default=Config())
+    skel_conf = config.get(&#34;neurons&#34;, default=Config())
     tag_conf = skel_conf.get(&#34;tags&#34;, default=Config())
     skel_dir = out_dir / &#34;neurons&#34;
 
