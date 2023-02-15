@@ -65,6 +65,8 @@ options:
   --no-token, -T        Omit CATMAID API token from credentials file.
 ```
 
+If you would prefer to write the config and credentials files yourself, see the [examples here](./src/catmaid_publish/).
+
 ### Configuration
 
 Fill in the config file using [TOML formatting](https://toml.io/en/).

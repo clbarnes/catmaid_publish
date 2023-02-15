@@ -1,5 +1,7 @@
 # details on TOML format can be found here: https://toml.io/en/
 [citation]
+# comment out this section (prepend lines with #)
+# to prevent writing of citation information
 doi = "10.1000/182"
 url = "https://www.doi.org/hb.html"
 biblatex = '''
