@@ -47,8 +47,8 @@ If `all = false`, you can list the names of specific objects to be exported.
 You can also rename specific objects by mapping the old name to the new one (objects to be renamed will be added to the list of objects to export).
 
 Some objects can be annotated.
-In this case, you can instead list annotations for which directly annotated objects will be exported.
-Indirectly annotated ("sub-annotated") objects, e.g. the relationship between A and C in `annotation "A" -> annotation "B" -> skeleton "C"` will not be exported.
+In this case, you can instead list annotations for which annotated objects will be exported.
+Indirectly annotated ("sub-annotated") objects, e.g. the relationship between A and C in `annotation "A" -> annotation "B" -> skeleton "C"` will also be exported.
 
 ### Authentication
 

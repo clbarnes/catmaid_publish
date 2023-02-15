@@ -13,6 +13,7 @@ import pandas as pd
 import pymaid
 from tqdm import tqdm
 
+from .annotations import sub_annotations
 from .utils import fill_in_dict
 
 logger = logging.getLogger(__name__)
@@ -68,7 +69,8 @@ def get_skeletons(
         if rename:
             skids.update(pymaid.get_skids_by_name(list(rename)))
         if annotated:
-            skids.update(pymaid.get_skids_by_annotation(annotated))
+            all_anns = sub_annotations(annotated)
+            skids.update(pymaid.get_skids_by_annotation(all_anns))
 
     logger.warning("Fetching %s skeletons, may be slow", len(skids))
     neurons: pymaid.CatmaidNeuronList = pymaid.get_neuron(sorted(skids))

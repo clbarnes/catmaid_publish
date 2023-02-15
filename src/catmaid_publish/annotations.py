@@ -5,22 +5,50 @@ from typing import Optional
 import networkx as nx
 import pymaid
 
-from .utils import fill_in_dict
+from .utils import copy_cache, descendants, fill_in_dict
 
 
-def descendants(g: nx.DiGraph, roots: list[str], max_depth=None):
-    """Find all descendant nodes from given roots, to a given depth."""
-    out = set()
-    to_visit: list[tuple[str, int]] = [(r, 0) for r in roots]
-    while to_visit:
-        node, depth = to_visit.pop()
-        if node in out:
-            continue
-        out.add(node)
-        if max_depth is not None and depth >= max_depth:
-            continue
-        to_visit.extend((n, depth + 1) for n in g.successors(node))
-    return out
+@copy_cache(maxsize=None)
+def annotation_graph() -> nx.DiGraph:
+    return pymaid.get_annotation_graph()
+
+
+def sub_annotations(annotations: list[str], include_roots=True, max_depth=None):
+    """Get all descendant annotations of the given annotations.
+
+    Parameters
+    ----------
+    annotations : list[str]
+        Root annotations.
+    include_roots : bool, optional
+        Whether to include the given roots, by default True.
+        If False, will only prune roots which have no parents,
+        e.g. a root will be kept if it is annotated by another root.
+    max_depth : int, optional
+        Maximum depth of descendants, by default None (full depth).
+
+    Returns
+    -------
+    set[str]
+        Set of annotations descended from the given roots.
+    """
+    g = annotation_graph()
+    skels = {n for n, d in g.nodes(data=True) if d.get("is_skeleton")}
+    g.remove_nodes_from(skels)
+
+    nodes = descendants(g, annotations, max_depth)
+    sub: nx.DiGraph = g.subgraph(nodes).copy()
+
+    if not include_roots:
+        to_remove = set()
+        for ann in annotations:
+            preds = list(sub.predecessors(ann))
+            if not preds:
+                to_remove.add(ann)
+
+        sub.remove_nodes_from(to_remove)
+
+    return sub
 
 
 def get_annotations(
@@ -46,7 +74,7 @@ def get_annotations(
         to its (renamed) sub-annotations.
         Second element is the complete dict of renames ``{old: new}``.
     """
-    g = pymaid.get_annotation_graph()
+    g = annotation_graph()
     skels = {n for n, d in g.nodes(data=True) if d.get("is_skeleton")}
     g.remove_nodes_from(skels)
 
@@ -66,7 +94,7 @@ def get_annotations(
 
 
 def write_annotation_graph(fpath: Path, annotations: dict[str, list[str]]):
-    """Write annotation graph as JSON ``{parent: children}``.
+    """Write annotation graph as JSON ``{parent: [child1, ...]}``.
 
     Parameters
     ----------
@@ -78,18 +106,6 @@ def write_annotation_graph(fpath: Path, annotations: dict[str, list[str]]):
     fpath.parent.mkdir(exist_ok=True, parents=True)
     with open(fpath, "w") as f:
         json.dump(annotations, f, indent=2, sort_keys=True)
-
-
-def read_annotation_graph(fpath):
-    with open(fpath) as f:
-        d = json.load(f)
-
-    g = nx.DiGraph()
-    for u, vs in d.items():
-        for v in vs:
-            g.add_edge(u, v)
-
-    return g
 
 
 class AnnotationReader:
