@@ -14,7 +14,8 @@ import pymaid
 from tqdm import tqdm
 
 from .annotations import sub_annotations
-from .utils import fill_in_dict
+from .constants import CACHE_SIZE
+from .utils import copy_cache, fill_in_dict
 
 logger = logging.getLogger(__name__)
 
@@ -190,17 +191,19 @@ class SkeletonReader:
         self.units = units
         self.default_read_spec = ReadSpec(*read_spec)
 
-    @lru_cache
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_meta(self, dpath):
         return json.loads((dpath / "metadata.json").read_text())
 
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_nodes(self, dpath):
         return pd.read_csv(dpath / "nodes.tsv", sep="\t")
 
-    @lru_cache
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_tags(self, dpath):
         return json.loads((dpath / "tags.json").read_text())
 
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_connectors(self, dpath):
         conns = pd.read_csv(dpath / "connectors.tsv", sep="\t")
         conns.rename(columns={"is_input": "type"}, inplace=True)
@@ -348,18 +351,14 @@ class SkeletonReader:
         return set(d)
 
     def get_annotation_graph(self) -> nx.DiGraph:
-        """Return graph of neurons and their annotations.
-
-        Parameters
-        ----------
-        with_neuron_data : bool or ReadSpec, optional
-            If False (default), do not read the full neuron data.
+        """Return graph of neuron annotations.
 
         Returns
         -------
         nx.DiGraph
             Edges are from annotations to neuron names.
-            All nodes have attribute ``"type"``, which is either ``"neuron"`` or ``"annotation"``.
+            All nodes have attribute ``"type"``,
+            which is either ``"neuron"`` or ``"annotation"``.
             All edges have attribute ``"meta_annotation"=False``.
         """
         g = nx.DiGraph()
@@ -383,6 +382,13 @@ class SkeletonReader:
         self, read_spec: Optional[ReadSpec] = None
     ) -> Iterable[navis.TreeNeuron]:
         """Lazily iterate through neurons in arbitrary order.
+
+        Can be used for filtering neurons based on some metadata, e.g.
+
+            lefts = []
+            for nrn in my_reader.get_all(ReadSpec(False, False, False)):
+                if "left" in nrn.name:
+                    lefts.append(my_reader.get_by_id(nrn.id)))
 
         Yields
         ------

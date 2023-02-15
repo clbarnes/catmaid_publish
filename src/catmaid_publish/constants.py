@@ -17,3 +17,5 @@ else:
     logger.info("DATA_DIR set to %s based on %s variable", DATA_DIR, data_var_name)
 
 CREDENTIALS_DIR = PROJECT_DIR / "credentials"
+
+CACHE_SIZE = 1024

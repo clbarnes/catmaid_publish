@@ -68,9 +68,9 @@ class DataReader:
     def get_metadata(self, *keys: str, default=NO_DEFAULT):
         """Get values from nested metadata dict.
 
-        e.g. to retrieve ``myvalue`` from metadata like
+        e.g. to retrieve possibly-absent ``myvalue`` from metadata like
         ``{"A": {"B": myvalue}}``, use
-        ``my_reader.get_metadata("A", "B")``.
+        ``my_reader.get_metadata("A", "B", default=None)``.
 
         Parameters
         ----------

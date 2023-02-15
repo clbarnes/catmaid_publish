@@ -120,6 +120,7 @@ class AnnotationReader:
         """
         self.dpath = dpath
 
+    @copy_cache()
     def get_graph(self) -> nx.DiGraph:
         """Return the saved graph of text annotations.
 

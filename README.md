@@ -112,6 +112,25 @@ landmark_locations: list[Location] = list(reader.landmarks.get_all())
 volume: navis.Volume = reader.volumes.get_by_name("my volume")
 ```
 
+### Tips
+
+In general, it's most robust to use the CATMAID UI to make an annotation specifically for your export; ideally namespaced and timestamped (e.g. `cbarnes_export_2023-02-15`).
+Later exports can be a superset of this one.
+
+#### Publication
+
+Consider running the export once to find which objects are exported,
+and determine whether any objects need renaming.
+Then update your configuration with these renames.
+
+#### Analysis snapshot
+
+In large CATMAID projects, there are relatively few landmarks, volumes, and annotations compared to skeletons.
+As these are all helpful for mining data, consider exporting with `all = true` for everything except skeletons.
+Use the CATMAID UI (e.g. connectivity widget, graph widget, volume intersection) to annotate a superset of your skeletons of interest for the export.
+
+It is easier to bounce between local analysis and use of the CATMAID UI if you do not rename any objects in this case.
+
 ## Containerisation
 
 This project can be containerised with [apptainer](https://apptainer.org/docs/user/main/quick_start.html) (formerly called Singularity)
@@ -124,7 +143,8 @@ The python files are installed in the container at `/project`.
 To improve container size and flexibility, the `./data/` directory is not included.
 To improve flexibility and security, the `./credentials/` directory is not included.
 
-You can [bind mount](https://apptainer.org/docs/user/main/bind_paths_and_mounts.html) these directories inside the container at runtime:
+Depending on where this directory is stored, it may be [accessible to the container by default](https://apptainer.org/docs/user/main/bind_paths_and_mounts.html#system-defined-bind-paths).
+Otherwise, you can manually [bind mount](https://apptainer.org/docs/user/main/bind_paths_and_mounts.html) these directories inside the container at runtime:
 
 ```sh
 # Find the data path your environment is using, defaulting to the local ./data

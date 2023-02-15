@@ -7,7 +7,9 @@ import navis
 import pandas as pd
 import pymaid
 
-from .utils import fill_in_dict
+from catmaid_publish.constants import CACHE_SIZE
+
+from .utils import copy_cache, fill_in_dict
 
 
 def get_volume_id(vol: navis.Volume):
@@ -83,6 +85,7 @@ class VolumeReader:
     def _dict(self, keys, values):
         return df_to_dict(self.names_df, keys, values)
 
+    @copy_cache(maxsize=CACHE_SIZE)
     def _read_vol(
         self, fpath: Path, name: Optional[str], volume_id: Optional[int]
     ) -> navis.Volume:

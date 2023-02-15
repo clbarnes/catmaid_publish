@@ -9,7 +9,7 @@ from typing import Any, Iterable, Optional
 import pandas as pd
 import pymaid
 
-from .utils import fill_in_dict
+from .utils import copy_cache, fill_in_dict
 
 
 def get_landmarks(
@@ -166,7 +166,7 @@ class LandmarkReader:
         self.dpath = dpath
         self.fpath = dpath / "locations.json"
 
-    @lru_cache
+    @copy_cache()
     def _locations(self):
         with open(self.fpath) as f:
             d = json.load(f)
