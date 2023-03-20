@@ -136,6 +136,7 @@ def main(
     config: Path,
     env_credentials: Optional[Path] = None,
     toml_credentials: Optional[Path] = None,
+    ignore_env: bool = False,
     include_http_basic: bool = True,
     include_api_token: bool = True,
 ):
@@ -147,7 +148,11 @@ def main(
     if env_credentials is not None and toml_credentials is not None:
         logger.warning("Writing both .env and .toml credentials; do you need both?")
 
-    envvars = read_env_vars()
+    if ignore_env:
+        envvars = dict()
+    else:
+        envvars = read_env_vars()
+
     placeholders = get_creds_placeholders()
 
     config.write_text(make_config_content(envvars))
@@ -188,6 +193,12 @@ def _main(args=None):
         ),
     )
     parser.add_argument(
+        "--ignore-env",
+        "-i",
+        action="store_true",
+        help=("Ignore CATMAID_* environment variables when writing credential files."),
+    )
+    parser.add_argument(
         "--no-http-basic",
         "-H",
         action="store_true",
@@ -206,6 +217,7 @@ def _main(args=None):
         parsed.config,
         parsed.env_credentials,
         parsed.toml_credentials,
+        parsed.ignore_env,
         not parsed.no_http_basic,
         not parsed.no_token,
     )
