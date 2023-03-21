@@ -113,9 +113,9 @@ class DataReader:
         Returns
         -------
         nx.DiGraph
-            Edges are from annotation name to annotation or neuron name.
+            Edges are from annotation name to annotation, neuronm or volume name.
             Nodes have attribute ``"type"``,
-            which is either ``"annotation"`` or ``"neuron"``.
+            which is either ``"annotation"``, ``"neuron"``, or ``"volume"``.
             Edges have a boolean attribute ``"meta_annotation"``
             (whether the target is an annotation).
         """
@@ -124,4 +124,6 @@ class DataReader:
             g.update(self.annotations.get_graph())
         if self.neurons:
             g.update(self.neurons.get_annotation_graph())
+        if self.volumes:
+            g.update(self.volumes.get_annotation_graph())
         return g

@@ -96,14 +96,16 @@ def publish_skeletons(config: Config, out_dir, ann_renames, pbar=None):
     return ret
 
 
-def publish_volumes(config: Config, out_dir, pbar=None):
+def publish_volumes(config: Config, out_dir, ann_renames: dict[str, str], pbar=None):
     if pbar is not None:
         pbar.set_description("Fetching volumes")
 
     vol_conf = config.get("volumes", default=Config())
     vols, _ = get_volumes(
+        vol_conf.get("annotated"),
         all_or_names(vol_conf),
         vol_conf.get("rename", default=dict()),
+        ann_renames,
     )
 
     if vols:
@@ -204,10 +206,10 @@ def publish_from_config(
     )
 
     with tqdm(total=4) as pbar:
-        _ = publish_landmarks(config, out_dir, pbar)
-        _ = publish_volumes(config, out_dir, pbar)
         _, ann_renames = publish_annotations(config, out_dir, pbar)
+        _ = publish_volumes(config, out_dir, ann_renames, pbar)
         _ = publish_skeletons(config, out_dir, ann_renames, pbar)
+        _ = publish_landmarks(config, out_dir, pbar)
 
     meta = {
         "timestamp": timestamp,

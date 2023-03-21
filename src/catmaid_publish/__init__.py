@@ -15,6 +15,7 @@ from .reader import (
 )
 from .skeletons import ReadSpec
 from .landmarks import Location
+from .volumes import AnnotatedVolume
 
 __all__ = [
     "publish_from_config",
@@ -25,5 +26,6 @@ __all__ = [
     "SkeletonReader",
     "LandmarkReader",
     "VolumeReader",
+    "AnnotatedVolume",
     "AnnotationReader",
 ]
