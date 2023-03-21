@@ -141,9 +141,9 @@ class DataReader:
         Returns
         -------
         nx.DiGraph
-            Edges are from annotation name to annotation or neuron name.
+            Edges are from annotation name to annotation, neuronm or volume name.
             Nodes have attribute ``&#34;type&#34;``,
-            which is either ``&#34;annotation&#34;`` or ``&#34;neuron&#34;``.
+            which is either ``&#34;annotation&#34;``, ``&#34;neuron&#34;``, or ``&#34;volume&#34;``.
             Edges have a boolean attribute ``&#34;meta_annotation&#34;``
             (whether the target is an annotation).
         &#34;&#34;&#34;
@@ -152,6 +152,8 @@ class DataReader:
             g.update(self.annotations.get_graph())
         if self.neurons:
             g.update(self.neurons.get_annotation_graph())
+        if self.volumes:
+            g.update(self.volumes.get_annotation_graph())
         return g</code></pre>
 </details>
 </section>
@@ -294,9 +296,9 @@ class DataReader:
         Returns
         -------
         nx.DiGraph
-            Edges are from annotation name to annotation or neuron name.
+            Edges are from annotation name to annotation, neuronm or volume name.
             Nodes have attribute ``&#34;type&#34;``,
-            which is either ``&#34;annotation&#34;`` or ``&#34;neuron&#34;``.
+            which is either ``&#34;annotation&#34;``, ``&#34;neuron&#34;``, or ``&#34;volume&#34;``.
             Edges have a boolean attribute ``&#34;meta_annotation&#34;``
             (whether the target is an annotation).
         &#34;&#34;&#34;
@@ -305,6 +307,8 @@ class DataReader:
             g.update(self.annotations.get_graph())
         if self.neurons:
             g.update(self.neurons.get_annotation_graph())
+        if self.volumes:
+            g.update(self.volumes.get_annotation_graph())
         return g</code></pre>
 </details>
 <h3>Methods</h3>
@@ -317,9 +321,9 @@ class DataReader:
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>nx.DiGraph</code></dt>
-<dd>Edges are from annotation name to annotation or neuron name.
+<dd>Edges are from annotation name to annotation, neuronm or volume name.
 Nodes have attribute <code>"type"</code>,
-which is either <code>"annotation"</code> or <code>"neuron"</code>.
+which is either <code>"annotation"</code>, <code>"neuron"</code>, or <code>"volume"</code>.
 Edges have a boolean attribute <code>"meta_annotation"</code>
 (whether the target is an annotation).</dd>
 </dl></div>
@@ -333,9 +337,9 @@ Edges have a boolean attribute <code>"meta_annotation"</code>
     Returns
     -------
     nx.DiGraph
-        Edges are from annotation name to annotation or neuron name.
+        Edges are from annotation name to annotation, neuronm or volume name.
         Nodes have attribute ``&#34;type&#34;``,
-        which is either ``&#34;annotation&#34;`` or ``&#34;neuron&#34;``.
+        which is either ``&#34;annotation&#34;``, ``&#34;neuron&#34;``, or ``&#34;volume&#34;``.
         Edges have a boolean attribute ``&#34;meta_annotation&#34;``
         (whether the target is an annotation).
     &#34;&#34;&#34;
@@ -344,6 +348,8 @@ Edges have a boolean attribute <code>"meta_annotation"</code>
         g.update(self.annotations.get_graph())
     if self.neurons:
         g.update(self.neurons.get_annotation_graph())
+    if self.volumes:
+        g.update(self.volumes.get_annotation_graph())
     return g</code></pre>
 </details>
 </dd>

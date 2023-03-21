@@ -44,7 +44,7 @@ If you have already set your credentials using environment variables starting wi
 
 ```_catmaid_publish_init
 usage: catmaid_publish_init [-h] [--toml-credentials TOML_CREDENTIALS]
-                            [--env-credentials ENV_CREDENTIALS]
+                            [--env-credentials ENV_CREDENTIALS] [--ignore-env]
                             [--no-http-basic] [--no-token]
                             config
 
@@ -61,6 +61,8 @@ options:
   --env-credentials ENV_CREDENTIALS, -e ENV_CREDENTIALS
                         Path to write env file for credentials. Will be
                         populated by CATMAID_* environment variables if set.
+  --ignore-env, -i      Ignore CATMAID_* environment variables when writing
+                        credential files.
   --no-http-basic, -H   Omit HTTP basic auth from credentials file.
   --no-token, -T        Omit CATMAID API token from credentials file.
 ```
