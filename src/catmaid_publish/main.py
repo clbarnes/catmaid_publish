@@ -263,7 +263,7 @@ def _main(args=None):
         nargs="?",
         type=Path,
         help=(
-            "Path to TOML file containing CATMAID credentials "
+            "Optional path to TOML file containing CATMAID credentials "
             "(http_user, http_password, api_token as necessary). "
             "Alternatively, use environment variables "
             "with the same names upper-cased and prefixed with CATMAID_."
