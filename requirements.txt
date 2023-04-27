@@ -19,6 +19,7 @@ ipython
 isort
 mypy
 pdoc3
+pipe2codeblock
 pur
 pytest
 setuptools
