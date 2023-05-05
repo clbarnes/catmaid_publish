@@ -1,5 +1,3 @@
-# Requirements should go here, ABOVE the "#extra: dev" line
-
 importlib-resources; python_version < '3.10'
 navis
 python-catmaid >= 2.4
