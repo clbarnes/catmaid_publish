@@ -2,7 +2,7 @@
 
 importlib-resources; python_version < '3.10'
 navis
-python-catmaid
+python-catmaid >= 2.4
 meshio
 pydantic
 tomli; python_version < '3.11'

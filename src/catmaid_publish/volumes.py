@@ -59,7 +59,7 @@ def get_volumes(
             continue
         for parent in g.predecessors(v):
             parent_d = g.nodes[parent]
-            if d["type"] != "annotation":
+            if parent_d["type"] != "annotation":
                 continue
             name_to_anns[d["name"]].add(parent_d["name"])
 
@@ -73,7 +73,8 @@ def get_volumes(
                 for _, d in g.nodes(data=True)
                 if d["type"] == "annotation" and d["name"] in ann_set
             ]
-            name_set.update(descendants(g, roots, (lambda _, d: d["type"] == "volume")))
+            for vol_id in descendants(g, roots, select_fn=lambda _, d: d["type"] == "volume"):
+                name_set.add(g.nodes[vol_id]["name"])
 
         name_set.update(names)
         names = sorted(name_set)

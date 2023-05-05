@@ -126,6 +126,32 @@ def descendants(
     return out
 
 
+def remove_nodes(
+    g: nx.Graph,
+    node_fn: Callable[[Any, dict], bool],
+) -> dict[Hashable, dict]:
+    """Remove nodes according to a function.
+
+    Parameters
+    ----------
+    g : nx.Graph
+    node_fn : Callable[[Any, dict], bool]
+        Callable which takes a node ID and attributes dict,
+        and returns True if it should be deleted.
+
+    Returns
+    -------
+    dict[Hashable, dict]
+        Dict of removed node IDs to their attributes dict.
+    """
+    out = dict()
+    for idx, data in g.nodes(data=True):
+        if node_fn(idx, data):
+            out[idx] = data
+    g.remove_nodes_from(out)
+    return out
+
+
 def join_markdown(*strings: Optional[str]) -> str:
     """Join stripped markdown strings with thematic breaks.
 
@@ -149,4 +175,4 @@ def join_markdown(*strings: Optional[str]) -> str:
 
 @copy_cache(maxsize=None)
 def entity_graph() -> nx.DiGraph:
-    return pymaid.get_entity_graph(["neuron", "volume", "neuron"])
+    return pymaid.get_entity_graph(["annotation", "neuron", "volume"])

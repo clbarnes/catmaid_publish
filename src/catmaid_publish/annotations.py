@@ -4,7 +4,7 @@ from typing import Optional
 
 import networkx as nx
 
-from .utils import copy_cache, descendants, entity_graph, fill_in_dict
+from .utils import copy_cache, descendants, entity_graph, fill_in_dict, remove_nodes
 
 
 def get_annotations(
@@ -31,7 +31,7 @@ def get_annotations(
         Second element is the complete dict of renames ``{old: new}``.
     """
     g = entity_graph()
-    g.remove_nodes_from((n for n, d in g.nodes(data=True) if d["type"] != "annotation"))
+    remove_nodes(g, lambda _, d: d["type"] != "annotation")
 
     if names is None:
         name_set = set(g.nodes)
@@ -44,9 +44,12 @@ def get_annotations(
     rename = fill_in_dict(rename, name_set)
 
     sub = g.subgraph((n for n, d in g.nodes(data=True) if d["name"] in rename))
+    id_to_name = {n: d["name"] for n, d in sub.nodes(data=True) if d["name"] in rename}
     out = dict()
-    for n in sorted(rename, key=rename.get):
-        out[rename[n]] = sorted(rename[sub.nodes[s]["name"]] for s in sub.successors(n))
+    for n in sorted(id_to_name, key=id_to_name.get):
+        out[id_to_name[n]] = sorted(
+            rename[sub.nodes[s]["name"]] for s in sub.successors(n)
+        )
 
     return out, rename
 
