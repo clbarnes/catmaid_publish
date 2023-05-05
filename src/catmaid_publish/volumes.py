@@ -73,7 +73,9 @@ def get_volumes(
                 for _, d in g.nodes(data=True)
                 if d["type"] == "annotation" and d["name"] in ann_set
             ]
-            for vol_id in descendants(g, roots, select_fn=lambda _, d: d["type"] == "volume"):
+            for vol_id in descendants(
+                g, roots, select_fn=lambda _, d: d["type"] == "volume"
+            ):
                 name_set.add(g.nodes[vol_id]["name"])
 
         name_set.update(names)
