@@ -13,9 +13,8 @@ import pandas as pd
 import pymaid
 from tqdm import tqdm
 
-from .annotations import sub_annotations
 from .constants import CACHE_SIZE
-from .utils import copy_cache, fill_in_dict
+from .utils import copy_cache, descendants, entity_graph, fill_in_dict
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +50,21 @@ def get_renamed_annotations(
 ) -> set[str]:
     anns = nrn.get_annotations()
     return {rename[a] for a in anns if a in rename}
+
+
+def sub_annotations(ann_names: list[str]):
+    g = entity_graph()
+    an = set(ann_names)
+    ann_ids = descendants(
+        g,
+        [
+            n
+            for n, d in g.nodes(data=True)
+            if d["type"] == "annotation" and d["name"] in an
+        ],
+        select_fn=(lambda n, d: d["type"] == "annotation"),
+    )
+    return [g.nodes[a]["name"] for a in ann_ids]
 
 
 def get_skeletons(

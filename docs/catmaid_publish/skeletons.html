@@ -41,9 +41,8 @@ import pandas as pd
 import pymaid
 from tqdm import tqdm
 
-from .annotations import sub_annotations
 from .constants import CACHE_SIZE
-from .utils import copy_cache, fill_in_dict
+from .utils import copy_cache, descendants, entity_graph, fill_in_dict
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +78,21 @@ def get_renamed_annotations(
 ) -&gt; set[str]:
     anns = nrn.get_annotations()
     return {rename[a] for a in anns if a in rename}
+
+
+def sub_annotations(ann_names: list[str]):
+    g = entity_graph()
+    an = set(ann_names)
+    ann_ids = descendants(
+        g,
+        [
+            n
+            for n, d in g.nodes(data=True)
+            if d[&#34;type&#34;] == &#34;annotation&#34; and d[&#34;name&#34;] in an
+        ],
+        select_fn=(lambda n, d: d[&#34;type&#34;] == &#34;annotation&#34;),
+    )
+    return [g.nodes[a][&#34;name&#34;] for a in ann_ids]
 
 
 def get_skeletons(
@@ -655,6 +669,30 @@ A JSON file with miscellaneous data about the neuron, including:
     df.sort_values(&#34;_order&#34;, inplace=True)
     df.drop(columns=[&#34;_order&#34;], inplace=True)
     return df</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.skeletons.sub_annotations"><code class="name flex">
+<span>def <span class="ident">sub_annotations</span></span>(<span>ann_names: list[str])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sub_annotations(ann_names: list[str]):
+    g = entity_graph()
+    an = set(ann_names)
+    ann_ids = descendants(
+        g,
+        [
+            n
+            for n, d in g.nodes(data=True)
+            if d[&#34;type&#34;] == &#34;annotation&#34; and d[&#34;name&#34;] in an
+        ],
+        select_fn=(lambda n, d: d[&#34;type&#34;] == &#34;annotation&#34;),
+    )
+    return [g.nodes[a][&#34;name&#34;] for a in ann_ids]</code></pre>
 </details>
 </dd>
 <dt id="catmaid_publish.skeletons.write_skeleton"><code class="name flex">
@@ -1333,6 +1371,7 @@ def name_to_id(self) -&gt; dict[str, int]:
 <li><code><a title="catmaid_publish.skeletons.get_renamed_annotations" href="#catmaid_publish.skeletons.get_renamed_annotations">get_renamed_annotations</a></code></li>
 <li><code><a title="catmaid_publish.skeletons.get_skeletons" href="#catmaid_publish.skeletons.get_skeletons">get_skeletons</a></code></li>
 <li><code><a title="catmaid_publish.skeletons.sort_skel_dfs" href="#catmaid_publish.skeletons.sort_skel_dfs">sort_skel_dfs</a></code></li>
+<li><code><a title="catmaid_publish.skeletons.sub_annotations" href="#catmaid_publish.skeletons.sub_annotations">sub_annotations</a></code></li>
 <li><code><a title="catmaid_publish.skeletons.write_skeleton" href="#catmaid_publish.skeletons.write_skeleton">write_skeleton</a></code></li>
 </ul>
 </li>

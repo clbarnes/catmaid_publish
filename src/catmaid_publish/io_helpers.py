@@ -31,7 +31,7 @@ class Config:
             d = dict()
         self._d = d
 
-    def get(self, *keys, default=NO_DEFAULT) -> Any:
+    def get(self, *keys, default=NO_DEFAULT, as_config=True) -> Any:
         """Default only applies to final key."""
         d = self._d
         for idx, k in enumerate(keys, 1):
@@ -42,7 +42,7 @@ class Config:
                     return default
                 raise e
 
-        if isinstance(d, Mapping):
+        if as_config and isinstance(d, Mapping):
             return type(self)(d)
 
         return d
@@ -58,7 +58,7 @@ class Config:
         return hash(hashable)
 
     def hex_digest(self):
-        return hex(hash(self))[2:]
+        return hex(hash(self)).split("x")[1]
 
 
 def hashable_toml_dict(d: dict[str, Any]):

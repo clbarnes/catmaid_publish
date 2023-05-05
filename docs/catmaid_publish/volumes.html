@@ -26,18 +26,38 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from functools import lru_cache
+<pre><code class="python">import json
+from collections import defaultdict
+from collections.abc import Sequence
+from functools import lru_cache
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Union
 
 import meshio
 import navis
+import networkx as nx
+import numpy as np
 import pandas as pd
 import pymaid
 
 from catmaid_publish.constants import CACHE_SIZE
 
-from .utils import copy_cache, fill_in_dict
+from .utils import copy_cache, descendants, entity_graph, fill_in_dict
+
+
+class AnnotatedVolume(navis.Volume):
+    def __init__(
+        self,
+        vertices: Union[list, np.ndarray],
+        faces: Union[list, np.ndarray] = None,
+        name: Optional[str] = None,
+        color: Union[str, Sequence[Union[int, float]]] = (0.85, 0.85, 0.85, 0.2),
+        id: Optional[int] = None,
+        annotations: Optional[set[str]] = None,
+        **kwargs,
+    ):
+        super().__init__(vertices, faces, name, color, id, **kwargs)
+        self.annotations = set() if not annotations else set(annotations)
 
 
 def get_volume_id(vol: navis.Volume):
@@ -45,9 +65,46 @@ def get_volume_id(vol: navis.Volume):
     return vol._kwargs[&#34;volume_id&#34;]
 
 
-def get_volumes(names: Optional[list[str]], rename: dict[str, str]):
+def get_volumes(
+    annotated: list[str],
+    names: Optional[list[str]],
+    rename: dict[str, str],
+    ann_renames: dict[str, str],
+) -&gt; tuple[dict[str, tuple[int, meshio.Mesh, set[str]]], dict[str, str]]:
+    &#34;&#34;&#34;
+    Returns 2-tuple:
+
+    (
+        {vol_renamed: (vol_id, mesh, renamed_annotations)},
+        {orig_name: out_name}
+    )
+    &#34;&#34;&#34;
+
+    name_to_anns = defaultdict(set)
+    g = entity_graph()
+    for v, d in g.nodes(data=True):
+        if d[&#34;type&#34;] != &#34;volume&#34;:
+            continue
+        for parent in g.predecessors(v):
+            parent_d = g.nodes[parent]
+            if d[&#34;type&#34;] != &#34;annotation&#34;:
+                continue
+            name_to_anns[d[&#34;name&#34;]].add(parent_d[&#34;name&#34;])
+
     if names is not None:
-        names = sorted(set(names).union(rename))
+        name_set = set(rename)
+
+        if annotated:
+            ann_set = set(annotated)
+            roots = [
+                d[&#34;id&#34;]
+                for _, d in g.nodes(data=True)
+                if d[&#34;type&#34;] == &#34;annotation&#34; and d[&#34;name&#34;] in ann_set
+            ]
+            name_set.update(descendants(g, roots, (lambda _, d: d[&#34;type&#34;] == &#34;volume&#34;)))
+
+        name_set.update(names)
+        names = sorted(name_set)
 
     volumes: dict[str, navis.Volume] = pymaid.get_volume(names)
     rename = fill_in_dict(rename, volumes.keys())
@@ -56,6 +113,7 @@ def get_volumes(names: Optional[list[str]], rename: dict[str, str]):
         rename[name]: (
             get_volume_id(vol),
             meshio.Mesh(vol.vertices, [(&#34;triangle&#34;, vol.faces)]),
+            {ann_renames[a] for a in name_to_anns[name] if a in ann_renames},
         )
         for name, vol in volumes.items()
     }
@@ -63,17 +121,24 @@ def get_volumes(names: Optional[list[str]], rename: dict[str, str]):
     return out, rename
 
 
-def write_volumes(dpath: Path, volumes: dict[str, tuple[int, meshio.Mesh]]):
+def write_volumes(dpath: Path, volumes: dict[str, tuple[int, meshio.Mesh, set[str]]]):
     if not volumes:
         return
     dpath.mkdir(parents=True, exist_ok=True)
 
+    ann_data = defaultdict(set)
+
     with open(dpath / &#34;names.tsv&#34;, &#34;w&#34;) as f:
         f.write(&#34;filename\tvolume_name\n&#34;)
-        for name, (vol_id, mesh) in sorted(volumes.items()):
+        for name, (vol_id, mesh, anns) in sorted(volumes.items()):
             fname = str(vol_id) + &#34;.stl&#34;
             f.write(f&#34;{fname}\t{name}\n&#34;)
             mesh.write(dpath / fname)
+            for ann in anns:
+                ann_data[ann].add(name)
+
+    with open(dpath / &#34;annotations.json&#34;, &#34;w&#34;) as f:
+        json.dump({k: sorted(v) for k, v in ann_data.items()}, f)
 
 
 def df_to_dict(df: pd.DataFrame, keys, values):
@@ -113,15 +178,48 @@ class VolumeReader:
     def _dict(self, keys, values):
         return df_to_dict(self.names_df, keys, values)
 
+    @copy_cache(maxsize=None)
+    def _get_annotations(self) -&gt; dict[str, set[str]]:
+        &#34;&#34;&#34;Map annotation names to volume names.
+
+        Returns
+        -------
+        dict[str, set[str]]
+        &#34;&#34;&#34;
+        d = json.loads((self.dpath / &#34;annotations.json&#34;).read_text())
+        return {k: set(v) for k, v in d.items()}
+
+    def get_annotation_graph(self) -&gt; nx.DiGraph:
+        &#34;&#34;&#34;Get graph of annotations to volumes.
+
+        Returns
+        -------
+        networkx.DiGraph
+        &#34;&#34;&#34;
+        g = nx.DiGraph()
+        for k, vs in self._get_annotations().items():
+            g.add_node(k, type=&#34;annotation&#34;)
+            for v in vs:
+                if v not in g.nodes:
+                    g.add_node(v, type=&#34;volume&#34;)
+                g.add_edge(k, v, meta_annotation=False)
+        return g
+
+    def _annotations_for_volume(self, name: str):
+        d = self._get_annotations()
+        return {a for a, names in d.items() if name in names}
+
     @copy_cache(maxsize=CACHE_SIZE)
     def _read_vol(
         self, fpath: Path, name: Optional[str], volume_id: Optional[int]
-    ) -&gt; navis.Volume:
-        vol = navis.Volume.from_file(fpath)
+    ) -&gt; AnnotatedVolume:
+        vol = AnnotatedVolume.from_file(fpath)
         if name is not None:
             d = self._dict(&#34;filename&#34;, &#34;volume_name&#34;)
             name = d[fpath.name]
         vol.name = name
+
+        vol.annotations.update(self._annotations_for_volume(name))
 
         if volume_id is None:
             volume_id = int(fpath.stem)
@@ -129,7 +227,7 @@ class VolumeReader:
         vol.id = volume_id
         return vol
 
-    def get_by_id(self, volume_id: int) -&gt; navis.Volume:
+    def get_by_id(self, volume_id: int) -&gt; AnnotatedVolume:
         &#34;&#34;&#34;Read a volume with a given (arbitrary) ID.
 
         Parameters
@@ -138,7 +236,7 @@ class VolumeReader:
 
         Returns
         -------
-        navis.Volume
+        AnnotatedVolume
         &#34;&#34;&#34;
         return self._read_vol(
             self.dpath / f&#34;{volume_id}.stl&#34;,
@@ -146,7 +244,7 @@ class VolumeReader:
             volume_id,
         )
 
-    def get_by_name(self, volume_name: str) -&gt; navis.Volume:
+    def get_by_name(self, volume_name: str) -&gt; AnnotatedVolume:
         &#34;&#34;&#34;Read a volume with a given name.
 
         Parameters
@@ -155,21 +253,37 @@ class VolumeReader:
 
         Returns
         -------
-        navis.Volume
+        AnnotatedVolume
         &#34;&#34;&#34;
         d = self._dict(&#34;volume_name&#34;, &#34;filename&#34;)
         fname = d[volume_name]
         path = self.dpath / fname
         return self._read_vol(path, volume_name, None)
 
-    def get_all(self) -&gt; Iterable[navis.Volume]:
+    def get_by_annotation(self, annotation: str) -&gt; Iterable[AnnotatedVolume]:
+        &#34;&#34;&#34;Lazily iterate through all volumes with the given annotation.
+
+        Parameters
+        ----------
+        annotation : str
+            Annotation name.
+
+        Yields
+        ------
+        Iterable[AnnotatedVolume]
+        &#34;&#34;&#34;
+        d = self._get_annotations()
+        for vol_name in d[annotation]:
+            yield self.get_by_name(vol_name)
+
+    def get_all(self) -&gt; Iterable[AnnotatedVolume]:
         &#34;&#34;&#34;Lazily iterate through all available volumes.
 
         Iteration is in the order used by ``names.tsv``.
 
         Yields
         ------
-        navis.Volume
+        AnnotatedVolume
         &#34;&#34;&#34;
         for fname, name in self._dict(&#34;filename&#34;, &#34;volume_name&#34;).items():
             fpath = self.dpath / fname
@@ -181,7 +295,8 @@ README = &#34;&#34;&#34;
 
 Volumes are regions of interest represented by 3D triangular meshes.
 
-Data in this directory can be parsed into `navis.Volume`s
+Data in this directory can be parsed into `AnnotatedVolume`s
+(a subclass of `navis.Volume` which simply adds an attribute `annotations: set[str]`)
 using `catmaid_publish.VolumeReader`.
 
 ## Files
@@ -194,7 +309,11 @@ This maps the name of the volume to the name of the file in which the mesh is st
 
 ### `*.stl`
 
-Files representing the volume, in ASCII STL format.
+Files representing the volume, in ASCII STL format, named with an arbitrary ID.
+
+### `annotations.json`
+
+A JSON file mapping annotation names to an array of the names of volumes it annotates.
 &#34;&#34;&#34;.lstrip()</code></pre>
 </details>
 </section>
@@ -233,17 +352,58 @@ Files representing the volume, in ASCII STL format.
 </details>
 </dd>
 <dt id="catmaid_publish.volumes.get_volumes"><code class="name flex">
-<span>def <span class="ident">get_volumes</span></span>(<span>names: Optional[list[str]], rename: dict[str, str])</span>
+<span>def <span class="ident">get_volumes</span></span>(<span>annotated: list[str], names: Optional[list[str]], rename: dict[str, str], ann_renames: dict[str, str]) ‑> tuple[dict[str, tuple[int, meshio._mesh.Mesh, set[str]]], dict[str, str]]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Returns 2-tuple:</p>
+<p>(
+{vol_renamed: (vol_id, mesh, renamed_annotations)},
+{orig_name: out_name}
+)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_volumes(names: Optional[list[str]], rename: dict[str, str]):
+<pre><code class="python">def get_volumes(
+    annotated: list[str],
+    names: Optional[list[str]],
+    rename: dict[str, str],
+    ann_renames: dict[str, str],
+) -&gt; tuple[dict[str, tuple[int, meshio.Mesh, set[str]]], dict[str, str]]:
+    &#34;&#34;&#34;
+    Returns 2-tuple:
+
+    (
+        {vol_renamed: (vol_id, mesh, renamed_annotations)},
+        {orig_name: out_name}
+    )
+    &#34;&#34;&#34;
+
+    name_to_anns = defaultdict(set)
+    g = entity_graph()
+    for v, d in g.nodes(data=True):
+        if d[&#34;type&#34;] != &#34;volume&#34;:
+            continue
+        for parent in g.predecessors(v):
+            parent_d = g.nodes[parent]
+            if d[&#34;type&#34;] != &#34;annotation&#34;:
+                continue
+            name_to_anns[d[&#34;name&#34;]].add(parent_d[&#34;name&#34;])
+
     if names is not None:
-        names = sorted(set(names).union(rename))
+        name_set = set(rename)
+
+        if annotated:
+            ann_set = set(annotated)
+            roots = [
+                d[&#34;id&#34;]
+                for _, d in g.nodes(data=True)
+                if d[&#34;type&#34;] == &#34;annotation&#34; and d[&#34;name&#34;] in ann_set
+            ]
+            name_set.update(descendants(g, roots, (lambda _, d: d[&#34;type&#34;] == &#34;volume&#34;)))
+
+        name_set.update(names)
+        names = sorted(name_set)
 
     volumes: dict[str, navis.Volume] = pymaid.get_volume(names)
     rename = fill_in_dict(rename, volumes.keys())
@@ -252,6 +412,7 @@ Files representing the volume, in ASCII STL format.
         rename[name]: (
             get_volume_id(vol),
             meshio.Mesh(vol.vertices, [(&#34;triangle&#34;, vol.faces)]),
+            {ann_renames[a] for a in name_to_anns[name] if a in ann_renames},
         )
         for name, vol in volumes.items()
     }
@@ -260,7 +421,7 @@ Files representing the volume, in ASCII STL format.
 </details>
 </dd>
 <dt id="catmaid_publish.volumes.write_volumes"><code class="name flex">
-<span>def <span class="ident">write_volumes</span></span>(<span>dpath: pathlib.Path, volumes: dict[str, tuple[int, meshio._mesh.Mesh]])</span>
+<span>def <span class="ident">write_volumes</span></span>(<span>dpath: pathlib.Path, volumes: dict[str, tuple[int, meshio._mesh.Mesh, set[str]]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -268,17 +429,24 @@ Files representing the volume, in ASCII STL format.
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def write_volumes(dpath: Path, volumes: dict[str, tuple[int, meshio.Mesh]]):
+<pre><code class="python">def write_volumes(dpath: Path, volumes: dict[str, tuple[int, meshio.Mesh, set[str]]]):
     if not volumes:
         return
     dpath.mkdir(parents=True, exist_ok=True)
 
+    ann_data = defaultdict(set)
+
     with open(dpath / &#34;names.tsv&#34;, &#34;w&#34;) as f:
         f.write(&#34;filename\tvolume_name\n&#34;)
-        for name, (vol_id, mesh) in sorted(volumes.items()):
+        for name, (vol_id, mesh, anns) in sorted(volumes.items()):
             fname = str(vol_id) + &#34;.stl&#34;
             f.write(f&#34;{fname}\t{name}\n&#34;)
-            mesh.write(dpath / fname)</code></pre>
+            mesh.write(dpath / fname)
+            for ann in anns:
+                ann_data[ann].add(name)
+
+    with open(dpath / &#34;annotations.json&#34;, &#34;w&#34;) as f:
+        json.dump({k: sorted(v) for k, v in ann_data.items()}, f)</code></pre>
 </details>
 </dd>
 </dl>
@@ -286,6 +454,102 @@ Files representing the volume, in ASCII STL format.
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="catmaid_publish.volumes.AnnotatedVolume"><code class="flex name class">
+<span>class <span class="ident">AnnotatedVolume</span></span>
+<span>(</span><span>vertices: Union[list, numpy.ndarray], faces: Union[list, numpy.ndarray] = None, name: Optional[str] = None, color: Union[str, collections.abc.Sequence[Union[int, float]]] = (0.85, 0.85, 0.85, 0.2), id: Optional[int] = None, annotations: Optional[set[str]] = None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Mesh consisting of vertices and faces.</p>
+<p>Subclass of <code>trimesh.Trimesh</code> with a few additional methods.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>vertices</code></strong> :&ensp;<code>list | array | mesh-like</code></dt>
+<dd><code>(N, 3)</code> vertices coordinates or an object that has
+<code>.vertices</code> and <code>.faces</code> attributes in which case <code>faces</code>
+parameter will be ignored.</dd>
+<dt><strong><code>faces</code></strong> :&ensp;<code>list | array</code></dt>
+<dd><code>(M, 3)</code> array of indexed triangle faces.</dd>
+<dt><strong><code>name</code></strong> :&ensp;<code>
+str</code>, optional</dt>
+<dd>A name for the volume.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>
+tuple</code>, optional</dt>
+<dd>RGB(A) color.</dd>
+<dt><strong><code>id</code></strong> :&ensp;<code>
+int</code>, optional</dt>
+<dd>If not provided, neuron will be assigned a random UUID as <code>.id</code>.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments passed through to <code>trimesh.Trimesh</code></dd>
+</dl>
+<h2 id="see-also">See Also</h2>
+<p><code>:func:</code>~navis.example_volume<code> Loads example volume(s).</code></p>
+<p><code>A Trimesh object contains a triangular 3D mesh.</code></p>
+<h2 id="parameters_1">Parameters</h2>
+<dl>
+<dt><strong><code>vertices</code></strong> :&ensp;<code>(n, 3) float</code></dt>
+<dd>&nbsp;</dd>
+<dt>Array of vertex locations</dt>
+<dt><strong><code>faces</code></strong> :&ensp;<code>(m, 3)</code> or <code>(m, 4) int</code></dt>
+<dd>&nbsp;</dd>
+<dt>Array of triangular or quad faces (triangulated on load)</dt>
+<dt><strong><code>face_normals</code></strong> :&ensp;<code>(m, 3) float</code></dt>
+<dd>&nbsp;</dd>
+<dt>Array of normal vectors corresponding to faces</dt>
+<dt><strong><code>vertex_normals</code></strong> :&ensp;<code>(n, 3) float</code></dt>
+<dd>&nbsp;</dd>
+<dt>Array of normal vectors for vertices</dt>
+<dt><strong><code>metadata</code></strong> :&ensp;<code>dict</code></dt>
+<dd>&nbsp;</dd>
+<dt>Any metadata about the mesh</dt>
+<dt><strong><code>process</code></strong> :&ensp;<code>bool</code></dt>
+<dd>&nbsp;</dd>
+<dt>if True, Nan and Inf values will be removed</dt>
+<dt>immediately and vertices will be merged</dt>
+<dt><strong><code>validate</code></strong> :&ensp;<code>bool</code></dt>
+<dd>&nbsp;</dd>
+<dt>If True, degenerate and duplicate faces will be</dt>
+<dt>removed immediately, and some functions will alter</dt>
+<dt>the mesh to ensure consistent results.</dt>
+<dt><strong><code>use_embree</code></strong> :&ensp;<code>bool</code></dt>
+<dd>&nbsp;</dd>
+<dt>If True try to use pyembree raytracer.</dt>
+<dt>If pyembree is not available it will automatically fall</dt>
+<dt>back to a much slower rtree/numpy implementation</dt>
+<dt><strong><code>initial_cache</code></strong> :&ensp;<code>dict</code></dt>
+<dd>&nbsp;</dd>
+<dt>A way to pass things to the cache in case expensive</dt>
+<dt>things were calculated before creating the mesh object.</dt>
+<dt><strong><code>visual</code></strong> :&ensp;<code>ColorVisuals</code> or <code>TextureVisuals</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>Assigned to self.visual</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AnnotatedVolume(navis.Volume):
+    def __init__(
+        self,
+        vertices: Union[list, np.ndarray],
+        faces: Union[list, np.ndarray] = None,
+        name: Optional[str] = None,
+        color: Union[str, Sequence[Union[int, float]]] = (0.85, 0.85, 0.85, 0.2),
+        id: Optional[int] = None,
+        annotations: Optional[set[str]] = None,
+        **kwargs,
+    ):
+        super().__init__(vertices, faces, name, color, id, **kwargs)
+        self.annotations = set() if not annotations else set(annotations)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>navis.core.volumes.Volume</li>
+<li>trimesh.base.Trimesh</li>
+<li>trimesh.parent.Geometry3D</li>
+<li>trimesh.parent.Geometry</li>
+<li>abc.ABC</li>
+</ul>
+</dd>
 <dt id="catmaid_publish.volumes.VolumeReader"><code class="flex name class">
 <span>class <span class="ident">VolumeReader</span></span>
 <span>(</span><span>dpath: pathlib.Path)</span>
@@ -334,15 +598,48 @@ Files representing the volume, in ASCII STL format.
     def _dict(self, keys, values):
         return df_to_dict(self.names_df, keys, values)
 
+    @copy_cache(maxsize=None)
+    def _get_annotations(self) -&gt; dict[str, set[str]]:
+        &#34;&#34;&#34;Map annotation names to volume names.
+
+        Returns
+        -------
+        dict[str, set[str]]
+        &#34;&#34;&#34;
+        d = json.loads((self.dpath / &#34;annotations.json&#34;).read_text())
+        return {k: set(v) for k, v in d.items()}
+
+    def get_annotation_graph(self) -&gt; nx.DiGraph:
+        &#34;&#34;&#34;Get graph of annotations to volumes.
+
+        Returns
+        -------
+        networkx.DiGraph
+        &#34;&#34;&#34;
+        g = nx.DiGraph()
+        for k, vs in self._get_annotations().items():
+            g.add_node(k, type=&#34;annotation&#34;)
+            for v in vs:
+                if v not in g.nodes:
+                    g.add_node(v, type=&#34;volume&#34;)
+                g.add_edge(k, v, meta_annotation=False)
+        return g
+
+    def _annotations_for_volume(self, name: str):
+        d = self._get_annotations()
+        return {a for a, names in d.items() if name in names}
+
     @copy_cache(maxsize=CACHE_SIZE)
     def _read_vol(
         self, fpath: Path, name: Optional[str], volume_id: Optional[int]
-    ) -&gt; navis.Volume:
-        vol = navis.Volume.from_file(fpath)
+    ) -&gt; AnnotatedVolume:
+        vol = AnnotatedVolume.from_file(fpath)
         if name is not None:
             d = self._dict(&#34;filename&#34;, &#34;volume_name&#34;)
             name = d[fpath.name]
         vol.name = name
+
+        vol.annotations.update(self._annotations_for_volume(name))
 
         if volume_id is None:
             volume_id = int(fpath.stem)
@@ -350,7 +647,7 @@ Files representing the volume, in ASCII STL format.
         vol.id = volume_id
         return vol
 
-    def get_by_id(self, volume_id: int) -&gt; navis.Volume:
+    def get_by_id(self, volume_id: int) -&gt; AnnotatedVolume:
         &#34;&#34;&#34;Read a volume with a given (arbitrary) ID.
 
         Parameters
@@ -359,7 +656,7 @@ Files representing the volume, in ASCII STL format.
 
         Returns
         -------
-        navis.Volume
+        AnnotatedVolume
         &#34;&#34;&#34;
         return self._read_vol(
             self.dpath / f&#34;{volume_id}.stl&#34;,
@@ -367,7 +664,7 @@ Files representing the volume, in ASCII STL format.
             volume_id,
         )
 
-    def get_by_name(self, volume_name: str) -&gt; navis.Volume:
+    def get_by_name(self, volume_name: str) -&gt; AnnotatedVolume:
         &#34;&#34;&#34;Read a volume with a given name.
 
         Parameters
@@ -376,21 +673,37 @@ Files representing the volume, in ASCII STL format.
 
         Returns
         -------
-        navis.Volume
+        AnnotatedVolume
         &#34;&#34;&#34;
         d = self._dict(&#34;volume_name&#34;, &#34;filename&#34;)
         fname = d[volume_name]
         path = self.dpath / fname
         return self._read_vol(path, volume_name, None)
 
-    def get_all(self) -&gt; Iterable[navis.Volume]:
+    def get_by_annotation(self, annotation: str) -&gt; Iterable[AnnotatedVolume]:
+        &#34;&#34;&#34;Lazily iterate through all volumes with the given annotation.
+
+        Parameters
+        ----------
+        annotation : str
+            Annotation name.
+
+        Yields
+        ------
+        Iterable[AnnotatedVolume]
+        &#34;&#34;&#34;
+        d = self._get_annotations()
+        for vol_name in d[annotation]:
+            yield self.get_by_name(vol_name)
+
+    def get_all(self) -&gt; Iterable[AnnotatedVolume]:
         &#34;&#34;&#34;Lazily iterate through all available volumes.
 
         Iteration is in the order used by ``names.tsv``.
 
         Yields
         ------
-        navis.Volume
+        AnnotatedVolume
         &#34;&#34;&#34;
         for fname, name in self._dict(&#34;filename&#34;, &#34;volume_name&#34;).items():
             fpath = self.dpath / fname
@@ -431,36 +744,103 @@ def names_df(self) -&gt; pd.DataFrame:
 <h3>Methods</h3>
 <dl>
 <dt id="catmaid_publish.volumes.VolumeReader.get_all"><code class="name flex">
-<span>def <span class="ident">get_all</span></span>(<span>self) ‑> Iterable[navis.core.volumes.Volume]</span>
+<span>def <span class="ident">get_all</span></span>(<span>self) ‑> Iterable[<a title="catmaid_publish.volumes.AnnotatedVolume" href="#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Lazily iterate through all available volumes.</p>
 <p>Iteration is in the order used by <code>names.tsv</code>.</p>
 <h2 id="yields">Yields</h2>
 <dl>
-<dt><code>navis.Volume</code></dt>
+<dt><code><a title="catmaid_publish.volumes.AnnotatedVolume" href="#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a></code></dt>
 <dd>&nbsp;</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_all(self) -&gt; Iterable[navis.Volume]:
+<pre><code class="python">def get_all(self) -&gt; Iterable[AnnotatedVolume]:
     &#34;&#34;&#34;Lazily iterate through all available volumes.
 
     Iteration is in the order used by ``names.tsv``.
 
     Yields
     ------
-    navis.Volume
+    AnnotatedVolume
     &#34;&#34;&#34;
     for fname, name in self._dict(&#34;filename&#34;, &#34;volume_name&#34;).items():
         fpath = self.dpath / fname
         yield self._read_vol(fpath, name, None)</code></pre>
 </details>
 </dd>
+<dt id="catmaid_publish.volumes.VolumeReader.get_annotation_graph"><code class="name flex">
+<span>def <span class="ident">get_annotation_graph</span></span>(<span>self) ‑> networkx.classes.digraph.DiGraph</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get graph of annotations to volumes.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>networkx.DiGraph</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_annotation_graph(self) -&gt; nx.DiGraph:
+    &#34;&#34;&#34;Get graph of annotations to volumes.
+
+    Returns
+    -------
+    networkx.DiGraph
+    &#34;&#34;&#34;
+    g = nx.DiGraph()
+    for k, vs in self._get_annotations().items():
+        g.add_node(k, type=&#34;annotation&#34;)
+        for v in vs:
+            if v not in g.nodes:
+                g.add_node(v, type=&#34;volume&#34;)
+            g.add_edge(k, v, meta_annotation=False)
+    return g</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.volumes.VolumeReader.get_by_annotation"><code class="name flex">
+<span>def <span class="ident">get_by_annotation</span></span>(<span>self, annotation: str) ‑> Iterable[<a title="catmaid_publish.volumes.AnnotatedVolume" href="#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lazily iterate through all volumes with the given annotation.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>annotation</code></strong> :&ensp;<code>str</code></dt>
+<dd>Annotation name.</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code>Iterable[<a title="catmaid_publish.volumes.AnnotatedVolume" href="#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a>]</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_by_annotation(self, annotation: str) -&gt; Iterable[AnnotatedVolume]:
+    &#34;&#34;&#34;Lazily iterate through all volumes with the given annotation.
+
+    Parameters
+    ----------
+    annotation : str
+        Annotation name.
+
+    Yields
+    ------
+    Iterable[AnnotatedVolume]
+    &#34;&#34;&#34;
+    d = self._get_annotations()
+    for vol_name in d[annotation]:
+        yield self.get_by_name(vol_name)</code></pre>
+</details>
+</dd>
 <dt id="catmaid_publish.volumes.VolumeReader.get_by_id"><code class="name flex">
-<span>def <span class="ident">get_by_id</span></span>(<span>self, volume_id: int) ‑> navis.core.volumes.Volume</span>
+<span>def <span class="ident">get_by_id</span></span>(<span>self, volume_id: int) ‑> <a title="catmaid_publish.volumes.AnnotatedVolume" href="#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Read a volume with a given (arbitrary) ID.</p>
@@ -471,14 +851,14 @@ def names_df(self) -&gt; pd.DataFrame:
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>navis.Volume</code></dt>
+<dt><code><a title="catmaid_publish.volumes.AnnotatedVolume" href="#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a></code></dt>
 <dd>&nbsp;</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_by_id(self, volume_id: int) -&gt; navis.Volume:
+<pre><code class="python">def get_by_id(self, volume_id: int) -&gt; AnnotatedVolume:
     &#34;&#34;&#34;Read a volume with a given (arbitrary) ID.
 
     Parameters
@@ -487,7 +867,7 @@ def names_df(self) -&gt; pd.DataFrame:
 
     Returns
     -------
-    navis.Volume
+    AnnotatedVolume
     &#34;&#34;&#34;
     return self._read_vol(
         self.dpath / f&#34;{volume_id}.stl&#34;,
@@ -497,7 +877,7 @@ def names_df(self) -&gt; pd.DataFrame:
 </details>
 </dd>
 <dt id="catmaid_publish.volumes.VolumeReader.get_by_name"><code class="name flex">
-<span>def <span class="ident">get_by_name</span></span>(<span>self, volume_name: str) ‑> navis.core.volumes.Volume</span>
+<span>def <span class="ident">get_by_name</span></span>(<span>self, volume_name: str) ‑> <a title="catmaid_publish.volumes.AnnotatedVolume" href="#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Read a volume with a given name.</p>
@@ -508,14 +888,14 @@ def names_df(self) -&gt; pd.DataFrame:
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>navis.Volume</code></dt>
+<dt><code><a title="catmaid_publish.volumes.AnnotatedVolume" href="#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a></code></dt>
 <dd>&nbsp;</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_by_name(self, volume_name: str) -&gt; navis.Volume:
+<pre><code class="python">def get_by_name(self, volume_name: str) -&gt; AnnotatedVolume:
     &#34;&#34;&#34;Read a volume with a given name.
 
     Parameters
@@ -524,7 +904,7 @@ def names_df(self) -&gt; pd.DataFrame:
 
     Returns
     -------
-    navis.Volume
+    AnnotatedVolume
     &#34;&#34;&#34;
     d = self._dict(&#34;volume_name&#34;, &#34;filename&#34;)
     fname = d[volume_name]
@@ -559,9 +939,14 @@ def names_df(self) -&gt; pd.DataFrame:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="catmaid_publish.volumes.AnnotatedVolume" href="#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a></code></h4>
+</li>
+<li>
 <h4><code><a title="catmaid_publish.volumes.VolumeReader" href="#catmaid_publish.volumes.VolumeReader">VolumeReader</a></code></h4>
 <ul class="">
 <li><code><a title="catmaid_publish.volumes.VolumeReader.get_all" href="#catmaid_publish.volumes.VolumeReader.get_all">get_all</a></code></li>
+<li><code><a title="catmaid_publish.volumes.VolumeReader.get_annotation_graph" href="#catmaid_publish.volumes.VolumeReader.get_annotation_graph">get_annotation_graph</a></code></li>
+<li><code><a title="catmaid_publish.volumes.VolumeReader.get_by_annotation" href="#catmaid_publish.volumes.VolumeReader.get_by_annotation">get_by_annotation</a></code></li>
 <li><code><a title="catmaid_publish.volumes.VolumeReader.get_by_id" href="#catmaid_publish.volumes.VolumeReader.get_by_id">get_by_id</a></code></li>
 <li><code><a title="catmaid_publish.volumes.VolumeReader.get_by_name" href="#catmaid_publish.volumes.VolumeReader.get_by_name">get_by_name</a></code></li>
 <li><code><a title="catmaid_publish.volumes.VolumeReader.names_df" href="#catmaid_publish.volumes.VolumeReader.names_df">names_df</a></code></li>

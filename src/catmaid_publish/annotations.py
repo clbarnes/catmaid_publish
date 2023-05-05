@@ -3,52 +3,8 @@ from pathlib import Path
 from typing import Optional
 
 import networkx as nx
-import pymaid
 
-from .utils import copy_cache, descendants, fill_in_dict
-
-
-@copy_cache(maxsize=None)
-def annotation_graph() -> nx.DiGraph:
-    return pymaid.get_annotation_graph()
-
-
-def sub_annotations(annotations: list[str], include_roots=True, max_depth=None):
-    """Get all descendant annotations of the given annotations.
-
-    Parameters
-    ----------
-    annotations : list[str]
-        Root annotations.
-    include_roots : bool, optional
-        Whether to include the given roots, by default True.
-        If False, will only prune roots which have no parents,
-        e.g. a root will be kept if it is annotated by another root.
-    max_depth : int, optional
-        Maximum depth of descendants, by default None (full depth).
-
-    Returns
-    -------
-    set[str]
-        Set of annotations descended from the given roots.
-    """
-    g = annotation_graph()
-    skels = {n for n, d in g.nodes(data=True) if d.get("is_skeleton")}
-    g.remove_nodes_from(skels)
-
-    nodes = descendants(g, annotations, max_depth)
-    sub: nx.DiGraph = g.subgraph(nodes).copy()
-
-    if not include_roots:
-        to_remove = set()
-        for ann in annotations:
-            preds = list(sub.predecessors(ann))
-            if not preds:
-                to_remove.add(ann)
-
-        sub.remove_nodes_from(to_remove)
-
-    return sub
+from .utils import copy_cache, descendants, entity_graph, fill_in_dict, remove_nodes
 
 
 def get_annotations(
@@ -74,21 +30,26 @@ def get_annotations(
         to its (renamed) sub-annotations.
         Second element is the complete dict of renames ``{old: new}``.
     """
-    g = annotation_graph()
-    skels = {n for n, d in g.nodes(data=True) if d.get("is_skeleton")}
-    g.remove_nodes_from(skels)
+    g = entity_graph()
+    remove_nodes(g, lambda _, d: d["type"] != "annotation")
 
     if names is None:
         name_set = set(g.nodes)
     else:
-        name_set = set(names).union(descendants(g, annotated))
+        ann_set = set(annotated)
+        roots = [d["id"] for _, d in g.nodes(data=True) if d["name"] in ann_set]
+        desc = descendants(g, roots)
+        name_set = set(names).union(g.nodes[d]["name"] for d in desc)
 
     rename = fill_in_dict(rename, name_set)
 
-    sub = g.subgraph(list(rename))
+    sub = g.subgraph((n for n, d in g.nodes(data=True) if d["name"] in rename))
+    id_to_name = {n: d["name"] for n, d in sub.nodes(data=True) if d["name"] in rename}
     out = dict()
-    for n in sorted(rename, key=rename.get):
-        out[rename[n]] = sorted(rename[s] for s in sub.successors(n))
+    for n in sorted(id_to_name, key=id_to_name.get):
+        out[id_to_name[n]] = sorted(
+            rename[sub.nodes[s]["name"]] for s in sub.successors(n)
+        )
 
     return out, rename
 

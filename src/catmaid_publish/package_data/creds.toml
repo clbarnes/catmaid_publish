@@ -1,5 +1,3 @@
-# Activate these with `source path/to/catmaid_publish/credentials/example.env`
-
 # If your instance requires login to browse
 api_token = "y0urc47ma1d70k3n"
 

@@ -30,9 +30,10 @@
 from collections.abc import Iterable
 from copy import copy, deepcopy
 from functools import lru_cache, wraps
-from typing import Optional, TypeVar
+from typing import Any, Callable, Hashable, Optional, TypeVar
 
 import networkx as nx
+import pymaid
 
 logger = logging.getLogger(__name__)
 
@@ -114,21 +115,42 @@ def copy_cache(deep: bool = True, maxsize: Optional[int] = 128, typed: bool = Fa
     return wrapper
 
 
-def descendants(g: nx.DiGraph, roots: list[str], max_depth=None) -&gt; set[str]:
+def accept(node_id, node_data: dict[str, Any]) -&gt; bool:
+    return True
+
+
+def descendants(
+    g: nx.DiGraph,
+    roots: list[str],
+    max_depth=None,
+    select_fn: Optional[Callable[[Hashable, dict[str, Any]], bool]] = None,
+) -&gt; set[str]:
     &#34;&#34;&#34;Find all descendant nodes from given roots, to a given depth.
 
     Output includes given roots.
     &#34;&#34;&#34;
+    if select_fn is None:
+        select_fn = accept
+
     out = set()
+    visited = set()
     to_visit: list[tuple[str, int]] = [(r, 0) for r in roots]
     while to_visit:
         node, depth = to_visit.pop()
-        if node in out:
+
+        if node in visited:
             continue
-        out.add(node)
+
+        visited.add(node)
+
+        if select_fn(node, g.nodes[node]):
+            out.add(node)
+
         if max_depth is not None and depth &gt;= max_depth:
             continue
+
         to_visit.extend((n, depth + 1) for n in g.successors(node))
+
     return out
 
 
@@ -150,7 +172,12 @@ def join_markdown(*strings: Optional[str]) -&gt; str:
     if out:
         out.append(out.pop() + &#34;\n&#34;)
 
-    return &#34;\n\n---\n\n&#34;.join(out)</code></pre>
+    return &#34;\n\n---\n\n&#34;.join(out)
+
+
+@copy_cache(maxsize=None)
+def entity_graph() -&gt; nx.DiGraph:
+    return pymaid.get_entity_graph([&#34;neuron&#34;, &#34;volume&#34;, &#34;neuron&#34;])</code></pre>
 </details>
 </section>
 <section>
@@ -160,6 +187,19 @@ def join_markdown(*strings: Optional[str]) -&gt; str:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="catmaid_publish.utils.accept"><code class="name flex">
+<span>def <span class="ident">accept</span></span>(<span>node_id, node_data: dict[str, typing.Any]) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def accept(node_id, node_data: dict[str, Any]) -&gt; bool:
+    return True</code></pre>
+</details>
+</dd>
 <dt id="catmaid_publish.utils.copy_cache"><code class="name flex">
 <span>def <span class="ident">copy_cache</span></span>(<span>deep: bool = True, maxsize: Optional[int] = 128, typed: bool = False)</span>
 </code></dt>
@@ -249,7 +289,7 @@ False
 </details>
 </dd>
 <dt id="catmaid_publish.utils.descendants"><code class="name flex">
-<span>def <span class="ident">descendants</span></span>(<span>g: networkx.classes.digraph.DiGraph, roots: list[str], max_depth=None) ‑> set[str]</span>
+<span>def <span class="ident">descendants</span></span>(<span>g: networkx.classes.digraph.DiGraph, roots: list[str], max_depth=None, select_fn: Optional[Callable[[Hashable, dict[str, Any]], bool]] = None) ‑> set[str]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Find all descendant nodes from given roots, to a given depth.</p>
@@ -258,22 +298,53 @@ False
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def descendants(g: nx.DiGraph, roots: list[str], max_depth=None) -&gt; set[str]:
+<pre><code class="python">def descendants(
+    g: nx.DiGraph,
+    roots: list[str],
+    max_depth=None,
+    select_fn: Optional[Callable[[Hashable, dict[str, Any]], bool]] = None,
+) -&gt; set[str]:
     &#34;&#34;&#34;Find all descendant nodes from given roots, to a given depth.
 
     Output includes given roots.
     &#34;&#34;&#34;
+    if select_fn is None:
+        select_fn = accept
+
     out = set()
+    visited = set()
     to_visit: list[tuple[str, int]] = [(r, 0) for r in roots]
     while to_visit:
         node, depth = to_visit.pop()
-        if node in out:
+
+        if node in visited:
             continue
-        out.add(node)
+
+        visited.add(node)
+
+        if select_fn(node, g.nodes[node]):
+            out.add(node)
+
         if max_depth is not None and depth &gt;= max_depth:
             continue
+
         to_visit.extend((n, depth + 1) for n in g.successors(node))
+
     return out</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.utils.entity_graph"><code class="name flex">
+<span>def <span class="ident">entity_graph</span></span>(<span>) ‑> networkx.classes.digraph.DiGraph</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@copy_cache(maxsize=None)
+def entity_graph() -&gt; nx.DiGraph:
+    return pymaid.get_entity_graph([&#34;neuron&#34;, &#34;volume&#34;, &#34;neuron&#34;])</code></pre>
 </details>
 </dd>
 <dt id="catmaid_publish.utils.fill_in_dict"><code class="name flex">
@@ -370,9 +441,11 @@ False
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
+<ul class="two-column">
+<li><code><a title="catmaid_publish.utils.accept" href="#catmaid_publish.utils.accept">accept</a></code></li>
 <li><code><a title="catmaid_publish.utils.copy_cache" href="#catmaid_publish.utils.copy_cache">copy_cache</a></code></li>
 <li><code><a title="catmaid_publish.utils.descendants" href="#catmaid_publish.utils.descendants">descendants</a></code></li>
+<li><code><a title="catmaid_publish.utils.entity_graph" href="#catmaid_publish.utils.entity_graph">entity_graph</a></code></li>
 <li><code><a title="catmaid_publish.utils.fill_in_dict" href="#catmaid_publish.utils.fill_in_dict">fill_in_dict</a></code></li>
 <li><code><a title="catmaid_publish.utils.join_markdown" href="#catmaid_publish.utils.join_markdown">join_markdown</a></code></li>
 <li><code><a title="catmaid_publish.utils.setup_logging" href="#catmaid_publish.utils.setup_logging">setup_logging</a></code></li>

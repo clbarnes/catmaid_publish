@@ -40,7 +40,7 @@ def publish_annotations(config: Config, out_dir: Path, pbar=None):
     ann_children, ann_renames = get_annotations(
         ann_conf.get("annotated", default=[]),
         all_or_names(ann_conf),
-        ann_conf.get("rename", default=dict()),
+        ann_conf.get("rename", default=dict(), as_config=False),
     )
     if ann_children:
         if pbar is not None:
@@ -74,9 +74,9 @@ def publish_skeletons(config: Config, out_dir, ann_renames, pbar=None):
     for nrn, meta in get_skeletons(
         skel_conf.get("annotated", default=[]),
         all_or_names(skel_conf),
-        skel_conf.get("rename", default=dict()),
+        skel_conf.get("rename", default=dict(), as_config=False),
         all_or_names(tag_conf),
-        tag_conf.get("rename", default=dict()),
+        tag_conf.get("rename", default=dict(), as_config=False),
         ann_renames,
     ):
         write_skeleton(skel_dir / str(nrn.id), nrn, meta)
@@ -96,14 +96,16 @@ def publish_skeletons(config: Config, out_dir, ann_renames, pbar=None):
     return ret
 
 
-def publish_volumes(config: Config, out_dir, pbar=None):
+def publish_volumes(config: Config, out_dir, ann_renames: dict[str, str], pbar=None):
     if pbar is not None:
         pbar.set_description("Fetching volumes")
 
     vol_conf = config.get("volumes", default=Config())
     vols, _ = get_volumes(
+        vol_conf.get("annotated"),
         all_or_names(vol_conf),
-        vol_conf.get("rename", default=dict()),
+        vol_conf.get("rename", default=dict(), as_config=False),
+        ann_renames,
     )
 
     if vols:
@@ -134,9 +136,9 @@ def publish_landmarks(config: Config, out_dir, pbar=None):
     grp_conf = config.get("landmarks", "groups", default=Config())
     lmarks, groups = get_landmarks(
         all_or_names(grp_conf),
-        grp_conf.get("rename", default=dict()),
+        grp_conf.get("rename", default=dict(), as_config=False),
         all_or_names(lmark_conf),
-        lmark_conf.get("rename", default=dict()),
+        lmark_conf.get("rename", default=dict(), as_config=False),
     )
 
     if len(lmarks) + len(groups) > 0:
@@ -160,9 +162,9 @@ def publish_landmarks(config: Config, out_dir, pbar=None):
     return ret
 
 
-def citation_readme(config: dict):
+def citation_readme(config: Config):
     out = []
-    cit = config.get("citation", dict())
+    cit = config.get("citation", default={})
     if doi := cit.get("doi", "").strip():
         out.append(f"The DOI of this publication is [`{doi}`](https://doi.org/{doi}).")
     if url := cit.get("url", "").strip():
@@ -192,7 +194,7 @@ def publish_from_config(
     else:
         creds = None
 
-    project = config.get("project", {})
+    project = config.get("project", default={}, as_config=False)
     catmaid_info = {
         "server": config.get("project", "server_url"),
         "project_id": config.get("project", "project_id"),
@@ -204,23 +206,25 @@ def publish_from_config(
     )
 
     with tqdm(total=4) as pbar:
-        _ = publish_landmarks(config, out_dir, pbar)
-        _ = publish_volumes(config, out_dir, pbar)
         _, ann_renames = publish_annotations(config, out_dir, pbar)
+        _ = publish_volumes(config, out_dir, ann_renames, pbar)
         _ = publish_skeletons(config, out_dir, ann_renames, pbar)
+        _ = publish_landmarks(config, out_dir, pbar)
 
     meta = {
-        "timestamp": timestamp,
         "units": project["units"],
-        "config_hash": config_hash,
-        "export_package": {
-            "name": "catmaid_publish",
-            "url": "https://github.com/clbarnes/catmaid_publish",
-            "version": f"{__version__}",
+        "export": {
+            "timestamp": timestamp,
+            "config_hash": config_hash,
+            "package": {
+                "name": "catmaid_publish",
+                "url": "https://github.com/clbarnes/catmaid_publish",
+                "version": f"{__version__}",
+            },
         },
     }
 
-    cit = config.get("citation", dict())
+    cit = config.get("citation", default=dict(), as_config=False)
     ref = dict()
 
     if url := cit.get("url", "").strip():
@@ -261,7 +265,7 @@ def _main(args=None):
         nargs="?",
         type=Path,
         help=(
-            "Path to TOML file containing CATMAID credentials "
+            "Optional path to TOML file containing CATMAID credentials "
             "(http_user, http_password, api_token as necessary). "
             "Alternatively, use environment variables "
             "with the same names upper-cased and prefixed with CATMAID_."

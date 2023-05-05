@@ -2,9 +2,10 @@ import logging
 from collections.abc import Iterable
 from copy import copy, deepcopy
 from functools import lru_cache, wraps
-from typing import Optional, TypeVar
+from typing import Any, Callable, Hashable, Optional, TypeVar
 
 import networkx as nx
+import pymaid
 
 logger = logging.getLogger(__name__)
 
@@ -86,21 +87,68 @@ def copy_cache(deep: bool = True, maxsize: Optional[int] = 128, typed: bool = Fa
     return wrapper
 
 
-def descendants(g: nx.DiGraph, roots: list[str], max_depth=None) -> set[str]:
+def accept(node_id, node_data: dict[str, Any]) -> bool:
+    return True
+
+
+def descendants(
+    g: nx.DiGraph,
+    roots: list[str],
+    max_depth=None,
+    select_fn: Optional[Callable[[Hashable, dict[str, Any]], bool]] = None,
+) -> set[str]:
     """Find all descendant nodes from given roots, to a given depth.
 
     Output includes given roots.
     """
+    if select_fn is None:
+        select_fn = accept
+
     out = set()
+    visited = set()
     to_visit: list[tuple[str, int]] = [(r, 0) for r in roots]
     while to_visit:
         node, depth = to_visit.pop()
-        if node in out:
+
+        if node in visited:
             continue
-        out.add(node)
+
+        visited.add(node)
+
+        if select_fn(node, g.nodes[node]):
+            out.add(node)
+
         if max_depth is not None and depth >= max_depth:
             continue
+
         to_visit.extend((n, depth + 1) for n in g.successors(node))
+
+    return out
+
+
+def remove_nodes(
+    g: nx.Graph,
+    node_fn: Callable[[Any, dict], bool],
+) -> dict[Hashable, dict]:
+    """Remove nodes according to a function.
+
+    Parameters
+    ----------
+    g : nx.Graph
+    node_fn : Callable[[Any, dict], bool]
+        Callable which takes a node ID and attributes dict,
+        and returns True if it should be deleted.
+
+    Returns
+    -------
+    dict[Hashable, dict]
+        Dict of removed node IDs to their attributes dict.
+    """
+    out = dict()
+    for idx, data in g.nodes(data=True):
+        if node_fn(idx, data):
+            out[idx] = data
+    g.remove_nodes_from(out)
     return out
 
 
@@ -123,3 +171,8 @@ def join_markdown(*strings: Optional[str]) -> str:
         out.append(out.pop() + "\n")
 
     return "\n\n---\n\n".join(out)
+
+
+@copy_cache(maxsize=None)
+def entity_graph() -> nx.DiGraph:
+    return pymaid.get_entity_graph(["annotation", "neuron", "volume"])

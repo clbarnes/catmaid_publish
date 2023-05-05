@@ -1,8 +1,6 @@
-# Requirements should go here, ABOVE the "#extra: dev" line
-
 importlib-resources; python_version < '3.10'
 navis
-python-catmaid
+python-catmaid >= 2.4
 meshio
 pydantic
 tomli; python_version < '3.11'
@@ -19,6 +17,7 @@ ipython
 isort
 mypy
 pdoc3
+pipe2codeblock
 pur
 pytest
 setuptools

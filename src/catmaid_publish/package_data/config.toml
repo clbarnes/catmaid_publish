@@ -46,6 +46,7 @@ rename = {}
 
 [volumes]
 all = false
+annotated = []
 names = []
 rename = {}
 readme_footer = ""

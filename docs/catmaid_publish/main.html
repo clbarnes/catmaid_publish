@@ -125,14 +125,16 @@ def publish_skeletons(config: Config, out_dir, ann_renames, pbar=None):
     return ret
 
 
-def publish_volumes(config: Config, out_dir, pbar=None):
+def publish_volumes(config: Config, out_dir, ann_renames: dict[str, str], pbar=None):
     if pbar is not None:
         pbar.set_description(&#34;Fetching volumes&#34;)
 
     vol_conf = config.get(&#34;volumes&#34;, default=Config())
     vols, _ = get_volumes(
+        vol_conf.get(&#34;annotated&#34;),
         all_or_names(vol_conf),
         vol_conf.get(&#34;rename&#34;, default=dict()),
+        ann_renames,
     )
 
     if vols:
@@ -233,10 +235,10 @@ def publish_from_config(
     )
 
     with tqdm(total=4) as pbar:
-        _ = publish_landmarks(config, out_dir, pbar)
-        _ = publish_volumes(config, out_dir, pbar)
         _, ann_renames = publish_annotations(config, out_dir, pbar)
+        _ = publish_volumes(config, out_dir, ann_renames, pbar)
         _ = publish_skeletons(config, out_dir, ann_renames, pbar)
+        _ = publish_landmarks(config, out_dir, pbar)
 
     meta = {
         &#34;timestamp&#34;: timestamp,
@@ -450,10 +452,10 @@ if __name__ == &#34;__main__&#34;:
     )
 
     with tqdm(total=4) as pbar:
-        _ = publish_landmarks(config, out_dir, pbar)
-        _ = publish_volumes(config, out_dir, pbar)
         _, ann_renames = publish_annotations(config, out_dir, pbar)
+        _ = publish_volumes(config, out_dir, ann_renames, pbar)
         _ = publish_skeletons(config, out_dir, ann_renames, pbar)
+        _ = publish_landmarks(config, out_dir, pbar)
 
     meta = {
         &#34;timestamp&#34;: timestamp,
@@ -580,7 +582,7 @@ if __name__ == &#34;__main__&#34;:
 </details>
 </dd>
 <dt id="catmaid_publish.main.publish_volumes"><code class="name flex">
-<span>def <span class="ident">publish_volumes</span></span>(<span>config: <a title="catmaid_publish.io_helpers.Config" href="io_helpers.html#catmaid_publish.io_helpers.Config">Config</a>, out_dir, pbar=None)</span>
+<span>def <span class="ident">publish_volumes</span></span>(<span>config: <a title="catmaid_publish.io_helpers.Config" href="io_helpers.html#catmaid_publish.io_helpers.Config">Config</a>, out_dir, ann_renames: dict[str, str], pbar=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -588,14 +590,16 @@ if __name__ == &#34;__main__&#34;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def publish_volumes(config: Config, out_dir, pbar=None):
+<pre><code class="python">def publish_volumes(config: Config, out_dir, ann_renames: dict[str, str], pbar=None):
     if pbar is not None:
         pbar.set_description(&#34;Fetching volumes&#34;)
 
     vol_conf = config.get(&#34;volumes&#34;, default=Config())
     vols, _ = get_volumes(
+        vol_conf.get(&#34;annotated&#34;),
         all_or_names(vol_conf),
         vol_conf.get(&#34;rename&#34;, default=dict()),
+        ann_renames,
     )
 
     if vols:

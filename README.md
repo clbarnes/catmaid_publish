@@ -35,7 +35,22 @@ pip install -e .
 ## Usage
 
 `catmaid_publish` fetches data from a CATMAID instance based on a configuration file.
+
 If the instance requires authentication, credentials can be passed with environment variables or a separate TOML file.
+
+The workflow looks like this:
+
+```sh
+catmaid_publish_init my_config.toml --toml-credentials my_credentials.toml
+
+# edit my_config.toml for your export needs
+# edit my_credentials.toml with your login details (do not share or version control this file!)
+
+catmaid_publish my_config.toml my_export/ my_credentials.toml
+
+# optionally, compress export into a single zip file for transfer
+zip -r my_export.zip my_export
+```
 
 ### `catmaid_publish_init`
 
@@ -44,7 +59,7 @@ If you have already set your credentials using environment variables starting wi
 
 ```_catmaid_publish_init
 usage: catmaid_publish_init [-h] [--toml-credentials TOML_CREDENTIALS]
-                            [--env-credentials ENV_CREDENTIALS]
+                            [--env-credentials ENV_CREDENTIALS] [--ignore-env]
                             [--no-http-basic] [--no-token]
                             config
 
@@ -61,6 +76,8 @@ options:
   --env-credentials ENV_CREDENTIALS, -e ENV_CREDENTIALS
                         Path to write env file for credentials. Will be
                         populated by CATMAID_* environment variables if set.
+  --ignore-env, -i      Ignore CATMAID_* environment variables when writing
+                        credential files.
   --no-http-basic, -H   Omit HTTP basic auth from credentials file.
   --no-token, -T        Omit CATMAID API token from credentials file.
 ```
@@ -111,10 +128,10 @@ Export data from CATMAID in plaintext formats with simple configuration.
 positional arguments:
   config       Path to TOML config file.
   out          Path to output directory. Must not exist.
-  credentials  Path to TOML file containing CATMAID credentials (http_user,
-               http_password, api_token as necessary). Alternatively, use
-               environment variables with the same names upper-cased and
-               prefixed with CATMAID_.
+  credentials  Optional path to TOML file containing CATMAID credentials
+               (http_user, http_password, api_token as necessary).
+               Alternatively, use environment variables with the same names
+               upper-cased and prefixed with CATMAID_.
 
 options:
   -h, --help   show this help message and exit
