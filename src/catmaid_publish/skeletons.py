@@ -307,7 +307,7 @@ class SkeletonReader:
         Returns
         -------
         dict[str, list[int]]
-            Mapping from annotation name to list skeleton IDs.
+            Mapping from annotation name to list of skeleton IDs.
         """
         out: dict[str, list[int]] = dict()
 
@@ -442,7 +442,7 @@ A `radius` of `-1.0` indicates that the radius of the neuron at this location ha
 
 Nodes are sorted topologically so that a node's parent is guaranteed to appear before it in the table.
 
-### `*/tags.json
+### `*/tags.json`
 
 A JSON file mapping tags (text labels) to the set of nodes (as integer IDs) to which they are applied.
 
