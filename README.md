@@ -1,7 +1,7 @@
 # catmaid_publish
 
-For the latest version, see here: https://github.com/clbarnes/catmaid_publish ;
-for docs see here: https://clbarnes.github.io/catmaid_publish
+For the latest version, see here: <https://github.com/clbarnes/catmaid_publish> ;
+for docs see here: <https://clbarnes.github.io/catmaid_publish>
 
 Scripts for publishing data from CATMAID.
 Also useful for taking a snapshot of a particular set of data for further reproducible analysis (but be careful not to mix exported data with live data from the server).
@@ -41,10 +41,11 @@ If the instance requires authentication, credentials can be passed with environm
 The workflow looks like this:
 
 ```sh
+# Empty config files will be created at these paths
 catmaid_publish_init my_config.toml --toml-credentials my_credentials.toml
 
-# edit my_config.toml for your export needs
-# edit my_credentials.toml with your login details (do not share or version control this file!)
+# Edit my_config.toml for your export needs
+# Edit my_credentials.toml with your login details (do not share or version control this file!)
 
 catmaid_publish my_config.toml my_export/ my_credentials.toml
 
@@ -110,11 +111,25 @@ If your CATMAID instance requires authentication (with a CATMAID account and/or 
 
 Passwords, API tokens etc. **MUST NOT** be tracked with git.
 
+A credentials file simply looks like this:
+
+```toml
+# If your instance requires login to browse
+api_token = "y0urc47ma1d70k3n"
+
+# If your instance uses HTTP Basic authentication to access
+http_user = "myuser"
+http_password = "mypassword"
+```
+
+Or use environment variables `CATMAID_API_TOKEN`, `CATMAID_HTTP_USER`, and `CATMAID_HTTP_PASSWORD`.
+
 ### `catmaid_publish`
 
 Once you have filled in the config file, use the `catmaid_publish` command to fetch and write the data, e.g.
 
 ```sh
+# leave out the credentials path if you are using environment variables
 catmaid_publish path/to/config.toml path/to/output_dir path/to/credentials.toml
 ```
 
