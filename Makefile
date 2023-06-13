@@ -32,7 +32,8 @@ container:
 .PHONY: readme
 readme:
 	catmaid_publish --help | p2c --tgt _catmaid_publish README.md && \
-	catmaid_publish_init --help | p2c --tgt _catmaid_publish_init README.md
+	catmaid_publish_init --help | p2c --tgt _catmaid_publish_init README.md && \
+	cp README.md src/catmaid_publish/package_data/README.md
 
 .PHONY: clean-docs
 clean-docs:

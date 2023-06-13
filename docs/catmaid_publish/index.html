@@ -195,7 +195,7 @@ apptainer exec \
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">&#34;&#34;&#34;
-.. include:: ../../README.md
+.. include:: package_data/README.md
 &#34;&#34;&#34;
 # isort: skip_file
 from .version import version as __version__  # noqa: F401
@@ -966,8 +966,8 @@ By default, raises a <code>KeyError</code>.</dd>
         ------
         tuple[Location, Location]
         &#34;&#34;&#34;
-        la_lo1 = dict()
-        la_lo2 = dict()
+        la_lo1: dict[str, list[Location]] = dict()
+        la_lo2: dict[str, list[Location]] = dict()
         for loc in self._locations():
             if group1 in loc.groups:
                 if group2 in loc.groups:
@@ -1194,8 +1194,8 @@ and they are not the same location.</p>
     ------
     tuple[Location, Location]
     &#34;&#34;&#34;
-    la_lo1 = dict()
-    la_lo2 = dict()
+    la_lo1: dict[str, list[Location]] = dict()
+    la_lo2: dict[str, list[Location]] = dict()
     for loc in self._locations():
         if group1 in loc.groups:
             if group2 in loc.groups:

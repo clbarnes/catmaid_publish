@@ -1,5 +1,5 @@
 """
-.. include:: ../../README.md
+.. include:: package_data/README.md
 """
 # isort: skip_file
 from .version import version as __version__  # noqa: F401

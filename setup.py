@@ -19,7 +19,7 @@ setup(
     long_description_content_type="text/markdown",
     package_dir={"": "src"},
     packages=find_namespace_packages(where="src", include=["catmaid_publish*"]),
-    package_data={"catmaid_publish.package_data": ["*.toml", "*.env"]},
+    package_data={"catmaid_publish.package_data": ["*.toml", "*.env", "*.md"]},
     python_requires=">=3.9, <4.0",
     classifiers=[
         "Programming Language :: Python :: 3",
