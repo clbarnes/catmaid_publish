@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections import defaultdict
 
 import json
 from dataclasses import asdict, dataclass, field
@@ -82,7 +83,7 @@ def get_landmarks(
 
 @dataclass
 class Location:
-    """Location of importants to landmarks and groups.
+    """Location of importance to landmarks and groups.
 
     Attributes
     ----------
@@ -231,11 +232,58 @@ class LandmarkReader:
         ----------
         landmark : str
             Landmark name (can give multiple as *args)
+
+        Yields
+        ------
+        Location
         """
         lmarkset = set(landmark)
         for loc in self._locations():
             if not loc.landmarks.isdisjoint(lmarkset):
                 yield loc
+
+    def get_paired_locations(
+        self, group1: str, group2: str
+    ) -> Iterable[tuple[Location, Location]]:
+        """Iterate through paired locations.
+
+        Locations are paired when both belong to the same landmark,
+        and each location is the only one of that landmark to exist in that group.
+
+        This is useful for creating transformations between two spaces
+        (as landmark groups) by shared features (as landmarks).
+
+        Parameters
+        ----------
+        group1 : str
+            Group name
+        group2 : str
+            Group name
+
+        Yields
+        ------
+        tuple[Location, Location]
+        """
+        la_lo1 = dict()
+        la_lo2 = dict()
+        for loc in self._locations():
+            if group1 in loc.groups:
+                for landmark in loc.landmarks:
+                    la_lo1.setdefault(landmark, []).append(loc)
+            if group2 in loc.groups:
+                for landmark in loc.landmarks:
+                    la_lo2.setdefault(landmark, []).append(loc)
+
+        landmarks = sorted(set(la_lo1).intersection(la_lo2))
+        for la in landmarks:
+            lo1 = la_lo1[la]
+            if len(lo1) != 1:
+                continue
+            lo2 = la_lo2[la]
+            if len(lo2) != 1:
+                continue
+
+            yield lo1[0], lo2[0]
 
 
 README = """
