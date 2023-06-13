@@ -25,7 +25,10 @@ source venv/bin/activate
 Then install the package, using one of:
 
 ```sh
-# from github
+# from PyPI (latest release)
+pip install catmaid_publish
+
+# from github (latest unreleased)
 pip install git+https://github.com/clbarnes/catmaid_publish.git
 
 # a local copy of the repo, from within the parent directory
