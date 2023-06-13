@@ -1,7 +1,6 @@
-"""
-.. include:: package_data/README.md
-"""
 # isort: skip_file
+import sys
+
 from .version import version as __version__  # noqa: F401
 from .version import version_tuple as __version_info__  # noqa: F401
 from .io_helpers import hash_toml
@@ -16,6 +15,13 @@ from .reader import (
 from .skeletons import ReadSpec
 from .landmarks import Location
 from .volumes import AnnotatedVolume
+
+if sys.version_info >= (3, 10):
+    from importlib.resources import files
+else:
+    from importlib_resources import files
+
+__doc__ = files("catmaid_publish.package_data").joinpath("README.md").read_text()
 
 __all__ = [
     "publish_from_config",
