@@ -1,5 +1,4 @@
 from __future__ import annotations
-from collections import defaultdict
 
 import json
 from dataclasses import asdict, dataclass, field
@@ -265,8 +264,8 @@ class LandmarkReader:
         ------
         tuple[Location, Location]
         """
-        la_lo1 = dict()
-        la_lo2 = dict()
+        la_lo1: dict[str, list[Location]] = dict()
+        la_lo2: dict[str, list[Location]] = dict()
         for loc in self._locations():
             if group1 in loc.groups:
                 if group2 in loc.groups:
