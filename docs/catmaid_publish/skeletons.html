@@ -335,7 +335,7 @@ class SkeletonReader:
         Returns
         -------
         dict[str, list[int]]
-            Mapping from annotation name to list skeleton IDs.
+            Mapping from annotation name to list of skeleton IDs.
         &#34;&#34;&#34;
         out: dict[str, list[int]] = dict()
 
@@ -470,7 +470,7 @@ A `radius` of `-1.0` indicates that the radius of the neuron at this location ha
 
 Nodes are sorted topologically so that a node&#39;s parent is guaranteed to appear before it in the table.
 
-### `*/tags.json
+### `*/tags.json`
 
 A JSON file mapping tags (text labels) to the set of nodes (as integer IDs) to which they are applied.
 
@@ -938,7 +938,7 @@ Metadata is always populated.</p>
         Returns
         -------
         dict[str, list[int]]
-            Mapping from annotation name to list skeleton IDs.
+            Mapping from annotation name to list of skeleton IDs.
         &#34;&#34;&#34;
         out: dict[str, list[int]] = dict()
 
@@ -1052,7 +1052,7 @@ Metadata is always populated.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>dict[str, list[int]]</code></dt>
-<dd>Mapping from annotation name to list skeleton IDs.</dd>
+<dd>Mapping from annotation name to list of skeleton IDs.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -1065,7 +1065,7 @@ def annotation_to_ids(self) -&gt; dict[str, list[int]]:
     Returns
     -------
     dict[str, list[int]]
-        Mapping from annotation name to list skeleton IDs.
+        Mapping from annotation name to list of skeleton IDs.
     &#34;&#34;&#34;
     out: dict[str, list[int]] = dict()
 

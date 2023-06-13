@@ -46,8 +46,20 @@ pip install git+https://github.com/clbarnes/catmaid_publish.git
 pip install -e .
 </code></pre>
 <h2 id="usage">Usage</h2>
-<p><code><a title="catmaid_publish" href="#catmaid_publish">catmaid_publish</a></code> fetches data from a CATMAID instance based on a configuration file.
-If the instance requires authentication, credentials can be passed with environment variables or a separate TOML file.</p>
+<p><code><a title="catmaid_publish" href="#catmaid_publish">catmaid_publish</a></code> fetches data from a CATMAID instance based on a configuration file.</p>
+<p>If the instance requires authentication, credentials can be passed with environment variables or a separate TOML file.</p>
+<p>The workflow looks like this:</p>
+<pre><code class="language-sh"># Empty config files will be created at these paths
+catmaid_publish_init my_config.toml --toml-credentials my_credentials.toml
+
+# Edit my_config.toml for your export needs
+# Edit my_credentials.toml with your login details (do not share or version control this file!)
+
+catmaid_publish my_config.toml my_export/ my_credentials.toml
+
+# optionally, compress export into a single zip file for transfer
+zip -r my_export.zip my_export
+</code></pre>
 <h3 id="catmaid_publish_init"><code>catmaid_publish_init</code></h3>
 <p>Use this to initialise an empty config and optional credentials files.
 If you have already set your credentials using environment variables starting with <code>CATMAID_</code>, the credentials files will be filled in.</p>
@@ -92,9 +104,19 @@ This string will have leading and trailing whitespace stripped, and, if still no
 <h3 id="authentication">Authentication</h3>
 <p>If your CATMAID instance requires authentication (with a CATMAID account and/or HTTP Basic authentication), fill in these details in a separate TOML file, or as environment variables (which can be loaded from a shell script file).</p>
 <p>Passwords, API tokens etc. <strong>MUST NOT</strong> be tracked with git.</p>
+<p>A credentials file simply looks like this:</p>
+<pre><code class="language-toml"># If your instance requires login to browse
+api_token = &quot;y0urc47ma1d70k3n&quot;
+
+# If your instance uses HTTP Basic authentication to access
+http_user = &quot;myuser&quot;
+http_password = &quot;mypassword&quot;
+</code></pre>
+<p>Or use environment variables <code>CATMAID_API_TOKEN</code>, <code>CATMAID_HTTP_USER</code>, and <code>CATMAID_HTTP_PASSWORD</code>.</p>
 <h3 id="catmaid_publish_1"><code><a title="catmaid_publish" href="#catmaid_publish">catmaid_publish</a></code></h3>
 <p>Once you have filled in the config file, use the <code><a title="catmaid_publish" href="#catmaid_publish">catmaid_publish</a></code> command to fetch and write the data, e.g.</p>
-<pre><code class="language-sh">catmaid_publish path/to/config.toml path/to/output_dir path/to/credentials.toml
+<pre><code class="language-sh"># leave out the credentials path if you are using environment variables
+catmaid_publish path/to/config.toml path/to/output_dir path/to/credentials.toml
 </code></pre>
 <p>Full usage details are here:</p>
 <pre><code class="language-_catmaid_publish">usage: catmaid_publish [-h] config out [credentials]
@@ -104,10 +126,10 @@ Export data from CATMAID in plaintext formats with simple configuration.
 positional arguments:
   config       Path to TOML config file.
   out          Path to output directory. Must not exist.
-  credentials  Path to TOML file containing CATMAID credentials (http_user,
-               http_password, api_token as necessary). Alternatively, use
-               environment variables with the same names upper-cased and
-               prefixed with CATMAID_.
+  credentials  Optional path to TOML file containing CATMAID credentials
+               (http_user, http_password, api_token as necessary).
+               Alternatively, use environment variables with the same names
+               upper-cased and prefixed with CATMAID_.
 
 options:
   -h, --help   show this help message and exit
@@ -296,7 +318,7 @@ __all__ = [
     else:
         creds = None
 
-    project = config.get(&#34;project&#34;, {})
+    project = config.get(&#34;project&#34;, default={}, as_config=False)
     catmaid_info = {
         &#34;server&#34;: config.get(&#34;project&#34;, &#34;server_url&#34;),
         &#34;project_id&#34;: config.get(&#34;project&#34;, &#34;project_id&#34;),
@@ -314,17 +336,19 @@ __all__ = [
         _ = publish_landmarks(config, out_dir, pbar)
 
     meta = {
-        &#34;timestamp&#34;: timestamp,
         &#34;units&#34;: project[&#34;units&#34;],
-        &#34;config_hash&#34;: config_hash,
-        &#34;export_package&#34;: {
-            &#34;name&#34;: &#34;catmaid_publish&#34;,
-            &#34;url&#34;: &#34;https://github.com/clbarnes/catmaid_publish&#34;,
-            &#34;version&#34;: f&#34;{__version__}&#34;,
+        &#34;export&#34;: {
+            &#34;timestamp&#34;: timestamp,
+            &#34;config_hash&#34;: config_hash,
+            &#34;package&#34;: {
+                &#34;name&#34;: &#34;catmaid_publish&#34;,
+                &#34;url&#34;: &#34;https://github.com/clbarnes/catmaid_publish&#34;,
+                &#34;version&#34;: f&#34;{__version__}&#34;,
+            },
         },
     }
 
-    cit = config.get(&#34;citation&#34;, dict())
+    cit = config.get(&#34;citation&#34;, default=dict(), as_config=False)
     ref = dict()
 
     if url := cit.get(&#34;url&#34;, &#34;&#34;).strip():
@@ -909,11 +933,58 @@ By default, raises a <code>KeyError</code>.</dd>
         ----------
         landmark : str
             Landmark name (can give multiple as *args)
+
+        Yields
+        ------
+        Location
         &#34;&#34;&#34;
         lmarkset = set(landmark)
         for loc in self._locations():
             if not loc.landmarks.isdisjoint(lmarkset):
-                yield loc</code></pre>
+                yield loc
+
+    def get_paired_locations(
+        self, group1: str, group2: str
+    ) -&gt; Iterable[tuple[Location, Location]]:
+        &#34;&#34;&#34;Iterate through paired locations.
+
+        Locations are paired when both belong to the same landmark,
+        and each location is the only one of that landmark to exist in that group.
+
+        This is useful for creating transformations between two spaces
+        (as landmark groups) by shared features (as landmarks).
+
+        Parameters
+        ----------
+        group1 : str
+            Group name
+        group2 : str
+            Group name
+
+        Yields
+        ------
+        tuple[Location, Location]
+        &#34;&#34;&#34;
+        la_lo1 = dict()
+        la_lo2 = dict()
+        for loc in self._locations():
+            if group1 in loc.groups:
+                for landmark in loc.landmarks:
+                    la_lo1.setdefault(landmark, []).append(loc)
+            if group2 in loc.groups:
+                for landmark in loc.landmarks:
+                    la_lo2.setdefault(landmark, []).append(loc)
+
+        landmarks = sorted(set(la_lo1).intersection(la_lo2))
+        for la in landmarks:
+            lo1 = la_lo1[la]
+            if len(lo1) != 1:
+                continue
+            lo2 = la_lo2[la]
+            if len(lo2) != 1:
+                continue
+
+            yield lo1[0], lo2[0]</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -1015,6 +1086,11 @@ By default, raises a <code>KeyError</code>.</dd>
 <dl>
 <dt><strong><code>landmark</code></strong> :&ensp;<code>str</code></dt>
 <dd>Landmark name (can give multiple as *args)</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code><a title="catmaid_publish.Location" href="#catmaid_publish.Location">Location</a></code></dt>
+<dd>&nbsp;</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -1027,6 +1103,10 @@ By default, raises a <code>KeyError</code>.</dd>
     ----------
     landmark : str
         Landmark name (can give multiple as *args)
+
+    Yields
+    ------
+    Location
     &#34;&#34;&#34;
     lmarkset = set(landmark)
     for loc in self._locations():
@@ -1062,6 +1142,75 @@ By default, raises a <code>KeyError</code>.</dd>
     return out</code></pre>
 </details>
 </dd>
+<dt id="catmaid_publish.LandmarkReader.get_paired_locations"><code class="name flex">
+<span>def <span class="ident">get_paired_locations</span></span>(<span>self, group1: str, group2: str) ‑> Iterable[tuple[<a title="catmaid_publish.landmarks.Location" href="landmarks.html#catmaid_publish.landmarks.Location">Location</a>, <a title="catmaid_publish.landmarks.Location" href="landmarks.html#catmaid_publish.landmarks.Location">Location</a>]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Iterate through paired locations.</p>
+<p>Locations are paired when both belong to the same landmark,
+and each location is the only one of that landmark to exist in that group.</p>
+<p>This is useful for creating transformations between two spaces
+(as landmark groups) by shared features (as landmarks).</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>group1</code></strong> :&ensp;<code>str</code></dt>
+<dd>Group name</dd>
+<dt><strong><code>group2</code></strong> :&ensp;<code>str</code></dt>
+<dd>Group name</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code>tuple[<a title="catmaid_publish.Location" href="#catmaid_publish.Location">Location</a>, <a title="catmaid_publish.Location" href="#catmaid_publish.Location">Location</a>]</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_paired_locations(
+    self, group1: str, group2: str
+) -&gt; Iterable[tuple[Location, Location]]:
+    &#34;&#34;&#34;Iterate through paired locations.
+
+    Locations are paired when both belong to the same landmark,
+    and each location is the only one of that landmark to exist in that group.
+
+    This is useful for creating transformations between two spaces
+    (as landmark groups) by shared features (as landmarks).
+
+    Parameters
+    ----------
+    group1 : str
+        Group name
+    group2 : str
+        Group name
+
+    Yields
+    ------
+    tuple[Location, Location]
+    &#34;&#34;&#34;
+    la_lo1 = dict()
+    la_lo2 = dict()
+    for loc in self._locations():
+        if group1 in loc.groups:
+            for landmark in loc.landmarks:
+                la_lo1.setdefault(landmark, []).append(loc)
+        if group2 in loc.groups:
+            for landmark in loc.landmarks:
+                la_lo2.setdefault(landmark, []).append(loc)
+
+    landmarks = sorted(set(la_lo1).intersection(la_lo2))
+    for la in landmarks:
+        lo1 = la_lo1[la]
+        if len(lo1) != 1:
+            continue
+        lo2 = la_lo2[la]
+        if len(lo2) != 1:
+            continue
+
+        yield lo1[0], lo2[0]</code></pre>
+</details>
+</dd>
 </dl>
 </dd>
 <dt id="catmaid_publish.Location"><code class="flex name class">
@@ -1069,7 +1218,7 @@ By default, raises a <code>KeyError</code>.</dd>
 <span>(</span><span>xyz: tuple[float, float, float], groups: set[str] = &lt;factory&gt;, landmarks: set[str] = &lt;factory&gt;)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Location of importants to landmarks and groups.</p>
+<div class="desc"><p>Location of importance to landmarks and groups.</p>
 <h2 id="attributes">Attributes</h2>
 <dl>
 <dt><strong><code>xyz</code></strong> :&ensp;<code>tuple[float, float, float]</code></dt>
@@ -1085,7 +1234,7 @@ By default, raises a <code>KeyError</code>.</dd>
 </summary>
 <pre><code class="python">@dataclass
 class Location:
-    &#34;&#34;&#34;Location of importants to landmarks and groups.
+    &#34;&#34;&#34;Location of importance to landmarks and groups.
 
     Attributes
     ----------
@@ -1437,7 +1586,7 @@ Metadata is always populated.</p>
         Returns
         -------
         dict[str, list[int]]
-            Mapping from annotation name to list skeleton IDs.
+            Mapping from annotation name to list of skeleton IDs.
         &#34;&#34;&#34;
         out: dict[str, list[int]] = dict()
 
@@ -1551,7 +1700,7 @@ Metadata is always populated.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>dict[str, list[int]]</code></dt>
-<dd>Mapping from annotation name to list skeleton IDs.</dd>
+<dd>Mapping from annotation name to list of skeleton IDs.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -1564,7 +1713,7 @@ def annotation_to_ids(self) -&gt; dict[str, list[int]]:
     Returns
     -------
     dict[str, list[int]]
-        Mapping from annotation name to list skeleton IDs.
+        Mapping from annotation name to list of skeleton IDs.
     &#34;&#34;&#34;
     out: dict[str, list[int]] = dict()
 
@@ -2290,6 +2439,7 @@ def names_df(self) -&gt; pd.DataFrame:
 <li><code><a title="catmaid_publish.LandmarkReader.get_group_names" href="#catmaid_publish.LandmarkReader.get_group_names">get_group_names</a></code></li>
 <li><code><a title="catmaid_publish.LandmarkReader.get_landmark" href="#catmaid_publish.LandmarkReader.get_landmark">get_landmark</a></code></li>
 <li><code><a title="catmaid_publish.LandmarkReader.get_landmark_names" href="#catmaid_publish.LandmarkReader.get_landmark_names">get_landmark_names</a></code></li>
+<li><code><a title="catmaid_publish.LandmarkReader.get_paired_locations" href="#catmaid_publish.LandmarkReader.get_paired_locations">get_paired_locations</a></code></li>
 </ul>
 </li>
 <li>

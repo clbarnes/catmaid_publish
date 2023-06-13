@@ -59,7 +59,7 @@ class Config:
             d = dict()
         self._d = d
 
-    def get(self, *keys, default=NO_DEFAULT) -&gt; Any:
+    def get(self, *keys, default=NO_DEFAULT, as_config=True) -&gt; Any:
         &#34;&#34;&#34;Default only applies to final key.&#34;&#34;&#34;
         d = self._d
         for idx, k in enumerate(keys, 1):
@@ -70,7 +70,7 @@ class Config:
                     return default
                 raise e
 
-        if isinstance(d, Mapping):
+        if as_config and isinstance(d, Mapping):
             return type(self)(d)
 
         return d
@@ -86,7 +86,7 @@ class Config:
         return hash(hashable)
 
     def hex_digest(self):
-        return hex(hash(self))[2:]
+        return hex(hash(self)).split(&#34;x&#34;)[1]
 
 
 def hashable_toml_dict(d: dict[str, Any]):
@@ -150,7 +150,7 @@ def get_catmaid_instance(*dicts) -&gt; pymaid.CatmaidInstance:
 </details>
 </dd>
 <dt id="catmaid_publish.io_helpers.get_data_dir"><code class="name flex">
-<span>def <span class="ident">get_data_dir</span></span>(<span>dname='1.0.1.dev9+g55e5891.d20230215')</span>
+<span>def <span class="ident">get_data_dir</span></span>(<span>dname='1.0.1.dev17+g5efac8c.d20230427')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -252,7 +252,7 @@ def get_catmaid_instance(*dicts) -&gt; pymaid.CatmaidInstance:
             d = dict()
         self._d = d
 
-    def get(self, *keys, default=NO_DEFAULT) -&gt; Any:
+    def get(self, *keys, default=NO_DEFAULT, as_config=True) -&gt; Any:
         &#34;&#34;&#34;Default only applies to final key.&#34;&#34;&#34;
         d = self._d
         for idx, k in enumerate(keys, 1):
@@ -263,7 +263,7 @@ def get_catmaid_instance(*dicts) -&gt; pymaid.CatmaidInstance:
                     return default
                 raise e
 
-        if isinstance(d, Mapping):
+        if as_config and isinstance(d, Mapping):
             return type(self)(d)
 
         return d
@@ -279,7 +279,7 @@ def get_catmaid_instance(*dicts) -&gt; pymaid.CatmaidInstance:
         return hash(hashable)
 
     def hex_digest(self):
-        return hex(hash(self))[2:]</code></pre>
+        return hex(hash(self)).split(&#34;x&#34;)[1]</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
@@ -303,7 +303,7 @@ def from_toml(cls, path):
 <h3>Methods</h3>
 <dl>
 <dt id="catmaid_publish.io_helpers.Config.get"><code class="name flex">
-<span>def <span class="ident">get</span></span>(<span>self, *keys, default=&lt;object object&gt;) ‑> Any</span>
+<span>def <span class="ident">get</span></span>(<span>self, *keys, default=&lt;object object&gt;, as_config=True) ‑> Any</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Default only applies to final key.</p></div>
@@ -311,7 +311,7 @@ def from_toml(cls, path):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get(self, *keys, default=NO_DEFAULT) -&gt; Any:
+<pre><code class="python">def get(self, *keys, default=NO_DEFAULT, as_config=True) -&gt; Any:
     &#34;&#34;&#34;Default only applies to final key.&#34;&#34;&#34;
     d = self._d
     for idx, k in enumerate(keys, 1):
@@ -322,7 +322,7 @@ def from_toml(cls, path):
                 return default
             raise e
 
-    if isinstance(d, Mapping):
+    if as_config and isinstance(d, Mapping):
         return type(self)(d)
 
     return d</code></pre>
@@ -338,7 +338,7 @@ def from_toml(cls, path):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def hex_digest(self):
-    return hex(hash(self))[2:]</code></pre>
+    return hex(hash(self)).split(&#34;x&#34;)[1]</code></pre>
 </details>
 </dd>
 </dl>

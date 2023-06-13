@@ -27,6 +27,7 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">from __future__ import annotations
+from collections import defaultdict
 
 import json
 from dataclasses import asdict, dataclass, field
@@ -110,7 +111,7 @@ def get_landmarks(
 
 @dataclass
 class Location:
-    &#34;&#34;&#34;Location of importants to landmarks and groups.
+    &#34;&#34;&#34;Location of importance to landmarks and groups.
 
     Attributes
     ----------
@@ -259,11 +260,58 @@ class LandmarkReader:
         ----------
         landmark : str
             Landmark name (can give multiple as *args)
+
+        Yields
+        ------
+        Location
         &#34;&#34;&#34;
         lmarkset = set(landmark)
         for loc in self._locations():
             if not loc.landmarks.isdisjoint(lmarkset):
                 yield loc
+
+    def get_paired_locations(
+        self, group1: str, group2: str
+    ) -&gt; Iterable[tuple[Location, Location]]:
+        &#34;&#34;&#34;Iterate through paired locations.
+
+        Locations are paired when both belong to the same landmark,
+        and each location is the only one of that landmark to exist in that group.
+
+        This is useful for creating transformations between two spaces
+        (as landmark groups) by shared features (as landmarks).
+
+        Parameters
+        ----------
+        group1 : str
+            Group name
+        group2 : str
+            Group name
+
+        Yields
+        ------
+        tuple[Location, Location]
+        &#34;&#34;&#34;
+        la_lo1 = dict()
+        la_lo2 = dict()
+        for loc in self._locations():
+            if group1 in loc.groups:
+                for landmark in loc.landmarks:
+                    la_lo1.setdefault(landmark, []).append(loc)
+            if group2 in loc.groups:
+                for landmark in loc.landmarks:
+                    la_lo2.setdefault(landmark, []).append(loc)
+
+        landmarks = sorted(set(la_lo1).intersection(la_lo2))
+        for la in landmarks:
+            lo1 = la_lo1[la]
+            if len(lo1) != 1:
+                continue
+            lo2 = la_lo2[la]
+            if len(lo2) != 1:
+                continue
+
+            yield lo1[0], lo2[0]
 
 
 README = &#34;&#34;&#34;
@@ -531,11 +579,58 @@ Locations are not unique as they can belong to several landmarks and/or groups.<
         ----------
         landmark : str
             Landmark name (can give multiple as *args)
+
+        Yields
+        ------
+        Location
         &#34;&#34;&#34;
         lmarkset = set(landmark)
         for loc in self._locations():
             if not loc.landmarks.isdisjoint(lmarkset):
-                yield loc</code></pre>
+                yield loc
+
+    def get_paired_locations(
+        self, group1: str, group2: str
+    ) -&gt; Iterable[tuple[Location, Location]]:
+        &#34;&#34;&#34;Iterate through paired locations.
+
+        Locations are paired when both belong to the same landmark,
+        and each location is the only one of that landmark to exist in that group.
+
+        This is useful for creating transformations between two spaces
+        (as landmark groups) by shared features (as landmarks).
+
+        Parameters
+        ----------
+        group1 : str
+            Group name
+        group2 : str
+            Group name
+
+        Yields
+        ------
+        tuple[Location, Location]
+        &#34;&#34;&#34;
+        la_lo1 = dict()
+        la_lo2 = dict()
+        for loc in self._locations():
+            if group1 in loc.groups:
+                for landmark in loc.landmarks:
+                    la_lo1.setdefault(landmark, []).append(loc)
+            if group2 in loc.groups:
+                for landmark in loc.landmarks:
+                    la_lo2.setdefault(landmark, []).append(loc)
+
+        landmarks = sorted(set(la_lo1).intersection(la_lo2))
+        for la in landmarks:
+            lo1 = la_lo1[la]
+            if len(lo1) != 1:
+                continue
+            lo2 = la_lo2[la]
+            if len(lo2) != 1:
+                continue
+
+            yield lo1[0], lo2[0]</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -637,6 +732,11 @@ Locations are not unique as they can belong to several landmarks and/or groups.<
 <dl>
 <dt><strong><code>landmark</code></strong> :&ensp;<code>str</code></dt>
 <dd>Landmark name (can give multiple as *args)</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code><a title="catmaid_publish.landmarks.Location" href="#catmaid_publish.landmarks.Location">Location</a></code></dt>
+<dd>&nbsp;</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -649,6 +749,10 @@ Locations are not unique as they can belong to several landmarks and/or groups.<
     ----------
     landmark : str
         Landmark name (can give multiple as *args)
+
+    Yields
+    ------
+    Location
     &#34;&#34;&#34;
     lmarkset = set(landmark)
     for loc in self._locations():
@@ -684,6 +788,75 @@ Locations are not unique as they can belong to several landmarks and/or groups.<
     return out</code></pre>
 </details>
 </dd>
+<dt id="catmaid_publish.landmarks.LandmarkReader.get_paired_locations"><code class="name flex">
+<span>def <span class="ident">get_paired_locations</span></span>(<span>self, group1: str, group2: str) ‑> Iterable[tuple[<a title="catmaid_publish.landmarks.Location" href="#catmaid_publish.landmarks.Location">Location</a>, <a title="catmaid_publish.landmarks.Location" href="#catmaid_publish.landmarks.Location">Location</a>]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Iterate through paired locations.</p>
+<p>Locations are paired when both belong to the same landmark,
+and each location is the only one of that landmark to exist in that group.</p>
+<p>This is useful for creating transformations between two spaces
+(as landmark groups) by shared features (as landmarks).</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>group1</code></strong> :&ensp;<code>str</code></dt>
+<dd>Group name</dd>
+<dt><strong><code>group2</code></strong> :&ensp;<code>str</code></dt>
+<dd>Group name</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code>tuple[<a title="catmaid_publish.landmarks.Location" href="#catmaid_publish.landmarks.Location">Location</a>, <a title="catmaid_publish.landmarks.Location" href="#catmaid_publish.landmarks.Location">Location</a>]</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_paired_locations(
+    self, group1: str, group2: str
+) -&gt; Iterable[tuple[Location, Location]]:
+    &#34;&#34;&#34;Iterate through paired locations.
+
+    Locations are paired when both belong to the same landmark,
+    and each location is the only one of that landmark to exist in that group.
+
+    This is useful for creating transformations between two spaces
+    (as landmark groups) by shared features (as landmarks).
+
+    Parameters
+    ----------
+    group1 : str
+        Group name
+    group2 : str
+        Group name
+
+    Yields
+    ------
+    tuple[Location, Location]
+    &#34;&#34;&#34;
+    la_lo1 = dict()
+    la_lo2 = dict()
+    for loc in self._locations():
+        if group1 in loc.groups:
+            for landmark in loc.landmarks:
+                la_lo1.setdefault(landmark, []).append(loc)
+        if group2 in loc.groups:
+            for landmark in loc.landmarks:
+                la_lo2.setdefault(landmark, []).append(loc)
+
+    landmarks = sorted(set(la_lo1).intersection(la_lo2))
+    for la in landmarks:
+        lo1 = la_lo1[la]
+        if len(lo1) != 1:
+            continue
+        lo2 = la_lo2[la]
+        if len(lo2) != 1:
+            continue
+
+        yield lo1[0], lo2[0]</code></pre>
+</details>
+</dd>
 </dl>
 </dd>
 <dt id="catmaid_publish.landmarks.Location"><code class="flex name class">
@@ -691,7 +864,7 @@ Locations are not unique as they can belong to several landmarks and/or groups.<
 <span>(</span><span>xyz: tuple[float, float, float], groups: set[str] = &lt;factory&gt;, landmarks: set[str] = &lt;factory&gt;)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Location of importants to landmarks and groups.</p>
+<div class="desc"><p>Location of importance to landmarks and groups.</p>
 <h2 id="attributes">Attributes</h2>
 <dl>
 <dt><strong><code>xyz</code></strong> :&ensp;<code>tuple[float, float, float]</code></dt>
@@ -707,7 +880,7 @@ Locations are not unique as they can belong to several landmarks and/or groups.<
 </summary>
 <pre><code class="python">@dataclass
 class Location:
-    &#34;&#34;&#34;Location of importants to landmarks and groups.
+    &#34;&#34;&#34;Location of importance to landmarks and groups.
 
     Attributes
     ----------
@@ -880,6 +1053,7 @@ def from_jso(cls, jso: dict[str, Any]) -&gt; Location:
 <li><code><a title="catmaid_publish.landmarks.LandmarkReader.get_group_names" href="#catmaid_publish.landmarks.LandmarkReader.get_group_names">get_group_names</a></code></li>
 <li><code><a title="catmaid_publish.landmarks.LandmarkReader.get_landmark" href="#catmaid_publish.landmarks.LandmarkReader.get_landmark">get_landmark</a></code></li>
 <li><code><a title="catmaid_publish.landmarks.LandmarkReader.get_landmark_names" href="#catmaid_publish.landmarks.LandmarkReader.get_landmark_names">get_landmark_names</a></code></li>
+<li><code><a title="catmaid_publish.landmarks.LandmarkReader.get_paired_locations" href="#catmaid_publish.landmarks.LandmarkReader.get_paired_locations">get_paired_locations</a></code></li>
 </ul>
 </li>
 <li>

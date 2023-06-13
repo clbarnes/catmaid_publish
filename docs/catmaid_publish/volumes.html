@@ -87,7 +87,7 @@ def get_volumes(
             continue
         for parent in g.predecessors(v):
             parent_d = g.nodes[parent]
-            if d[&#34;type&#34;] != &#34;annotation&#34;:
+            if parent_d[&#34;type&#34;] != &#34;annotation&#34;:
                 continue
             name_to_anns[d[&#34;name&#34;]].add(parent_d[&#34;name&#34;])
 
@@ -101,7 +101,10 @@ def get_volumes(
                 for _, d in g.nodes(data=True)
                 if d[&#34;type&#34;] == &#34;annotation&#34; and d[&#34;name&#34;] in ann_set
             ]
-            name_set.update(descendants(g, roots, (lambda _, d: d[&#34;type&#34;] == &#34;volume&#34;)))
+            for vol_id in descendants(
+                g, roots, select_fn=lambda _, d: d[&#34;type&#34;] == &#34;volume&#34;
+            ):
+                name_set.add(g.nodes[vol_id][&#34;name&#34;])
 
         name_set.update(names)
         names = sorted(name_set)
@@ -386,7 +389,7 @@ A JSON file mapping annotation names to an array of the names of volumes it anno
             continue
         for parent in g.predecessors(v):
             parent_d = g.nodes[parent]
-            if d[&#34;type&#34;] != &#34;annotation&#34;:
+            if parent_d[&#34;type&#34;] != &#34;annotation&#34;:
                 continue
             name_to_anns[d[&#34;name&#34;]].add(parent_d[&#34;name&#34;])
 
@@ -400,7 +403,10 @@ A JSON file mapping annotation names to an array of the names of volumes it anno
                 for _, d in g.nodes(data=True)
                 if d[&#34;type&#34;] == &#34;annotation&#34; and d[&#34;name&#34;] in ann_set
             ]
-            name_set.update(descendants(g, roots, (lambda _, d: d[&#34;type&#34;] == &#34;volume&#34;)))
+            for vol_id in descendants(
+                g, roots, select_fn=lambda _, d: d[&#34;type&#34;] == &#34;volume&#34;
+            ):
+                name_set.add(g.nodes[vol_id][&#34;name&#34;])
 
         name_set.update(names)
         names = sorted(name_set)

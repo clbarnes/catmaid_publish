@@ -154,6 +154,32 @@ def descendants(
     return out
 
 
+def remove_nodes(
+    g: nx.Graph,
+    node_fn: Callable[[Any, dict], bool],
+) -&gt; dict[Hashable, dict]:
+    &#34;&#34;&#34;Remove nodes according to a function.
+
+    Parameters
+    ----------
+    g : nx.Graph
+    node_fn : Callable[[Any, dict], bool]
+        Callable which takes a node ID and attributes dict,
+        and returns True if it should be deleted.
+
+    Returns
+    -------
+    dict[Hashable, dict]
+        Dict of removed node IDs to their attributes dict.
+    &#34;&#34;&#34;
+    out = dict()
+    for idx, data in g.nodes(data=True):
+        if node_fn(idx, data):
+            out[idx] = data
+    g.remove_nodes_from(out)
+    return out
+
+
 def join_markdown(*strings: Optional[str]) -&gt; str:
     &#34;&#34;&#34;Join stripped markdown strings with thematic breaks.
 
@@ -177,7 +203,7 @@ def join_markdown(*strings: Optional[str]) -&gt; str:
 
 @copy_cache(maxsize=None)
 def entity_graph() -&gt; nx.DiGraph:
-    return pymaid.get_entity_graph([&#34;neuron&#34;, &#34;volume&#34;, &#34;neuron&#34;])</code></pre>
+    return pymaid.get_entity_graph([&#34;annotation&#34;, &#34;neuron&#34;, &#34;volume&#34;])</code></pre>
 </details>
 </section>
 <section>
@@ -344,7 +370,7 @@ False
 </summary>
 <pre><code class="python">@copy_cache(maxsize=None)
 def entity_graph() -&gt; nx.DiGraph:
-    return pymaid.get_entity_graph([&#34;neuron&#34;, &#34;volume&#34;, &#34;neuron&#34;])</code></pre>
+    return pymaid.get_entity_graph([&#34;annotation&#34;, &#34;neuron&#34;, &#34;volume&#34;])</code></pre>
 </details>
 </dd>
 <dt id="catmaid_publish.utils.fill_in_dict"><code class="name flex">
@@ -402,6 +428,54 @@ def entity_graph() -&gt; nx.DiGraph:
     return &#34;\n\n---\n\n&#34;.join(out)</code></pre>
 </details>
 </dd>
+<dt id="catmaid_publish.utils.remove_nodes"><code class="name flex">
+<span>def <span class="ident">remove_nodes</span></span>(<span>g: networkx.classes.graph.Graph, node_fn: Callable[[Any, dict], bool]) ‑> dict[typing.Hashable, dict]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Remove nodes according to a function.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>g</code></strong> :&ensp;<code>nx.Graph</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>node_fn</code></strong> :&ensp;<code>Callable[[Any, dict], bool]</code></dt>
+<dd>Callable which takes a node ID and attributes dict,
+and returns True if it should be deleted.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict[Hashable, dict]</code></dt>
+<dd>Dict of removed node IDs to their attributes dict.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_nodes(
+    g: nx.Graph,
+    node_fn: Callable[[Any, dict], bool],
+) -&gt; dict[Hashable, dict]:
+    &#34;&#34;&#34;Remove nodes according to a function.
+
+    Parameters
+    ----------
+    g : nx.Graph
+    node_fn : Callable[[Any, dict], bool]
+        Callable which takes a node ID and attributes dict,
+        and returns True if it should be deleted.
+
+    Returns
+    -------
+    dict[Hashable, dict]
+        Dict of removed node IDs to their attributes dict.
+    &#34;&#34;&#34;
+    out = dict()
+    for idx, data in g.nodes(data=True):
+        if node_fn(idx, data):
+            out[idx] = data
+    g.remove_nodes_from(out)
+    return out</code></pre>
+</details>
+</dd>
 <dt id="catmaid_publish.utils.setup_logging"><code class="name flex">
 <span>def <span class="ident">setup_logging</span></span>(<span>level=10)</span>
 </code></dt>
@@ -448,6 +522,7 @@ def entity_graph() -&gt; nx.DiGraph:
 <li><code><a title="catmaid_publish.utils.entity_graph" href="#catmaid_publish.utils.entity_graph">entity_graph</a></code></li>
 <li><code><a title="catmaid_publish.utils.fill_in_dict" href="#catmaid_publish.utils.fill_in_dict">fill_in_dict</a></code></li>
 <li><code><a title="catmaid_publish.utils.join_markdown" href="#catmaid_publish.utils.join_markdown">join_markdown</a></code></li>
+<li><code><a title="catmaid_publish.utils.remove_nodes" href="#catmaid_publish.utils.remove_nodes">remove_nodes</a></code></li>
 <li><code><a title="catmaid_publish.utils.setup_logging" href="#catmaid_publish.utils.setup_logging">setup_logging</a></code></li>
 </ul>
 </li>
