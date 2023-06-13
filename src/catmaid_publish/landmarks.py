@@ -248,7 +248,8 @@ class LandmarkReader:
         """Iterate through paired locations.
 
         Locations are paired when both belong to the same landmark,
-        and each location is the only one of that landmark to exist in that group.
+        and each location is the only one of that landmark to exist in that group,
+        and they are not the same location.
 
         This is useful for creating transformations between two spaces
         (as landmark groups) by shared features (as landmarks).
@@ -268,9 +269,11 @@ class LandmarkReader:
         la_lo2 = dict()
         for loc in self._locations():
             if group1 in loc.groups:
+                if group2 in loc.groups:
+                    continue
                 for landmark in loc.landmarks:
                     la_lo1.setdefault(landmark, []).append(loc)
-            if group2 in loc.groups:
+            elif group2 in loc.groups:
                 for landmark in loc.landmarks:
                     la_lo2.setdefault(landmark, []).append(loc)
 
