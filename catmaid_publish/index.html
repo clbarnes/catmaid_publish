@@ -1,0 +1,2511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>catmaid_publish API documentation</title>
+<meta name="description" content="catmaid_publish …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Package <code>catmaid_publish</code></h1>
+</header>
+<section id="section-intro">
+<h1 id="catmaid_publish">catmaid_publish</h1>
+<p>For the latest version, see here: <a href="https://github.com/clbarnes/catmaid_publish">https://github.com/clbarnes/catmaid_publish</a> ;
+for docs see here: <a href="https://clbarnes.github.io/catmaid_publish">https://clbarnes.github.io/catmaid_publish</a></p>
+<p>Scripts for publishing data from CATMAID.
+Also useful for taking a snapshot of a particular set of data for further reproducible analysis (but be careful not to mix exported data with live data from the server).</p>
+<p>Originally created using
+<a href="https://github.com/cookiecutter/cookiecutter">cookiecutter</a> and
+<a href="https://github.com/clbarnes/python-template-sci">clbarnes/python-template-sci</a>.</p>
+<h2 id="installation">Installation</h2>
+<p>First, ensure you're working in a virtual environment:</p>
+<pre><code class="language-sh"># create a virtual environment if you don't have one
+python -m venv --prompt catmaid_publish venv
+
+# activate it
+source venv/bin/activate
+</code></pre>
+<p>Then install the package, using one of:</p>
+<pre><code class="language-sh"># from github
+pip install git+https://github.com/clbarnes/catmaid_publish.git
+
+# a local copy of the repo, from within the parent directory
+pip install -e .
+</code></pre>
+<h2 id="usage">Usage</h2>
+<p><code><a title="catmaid_publish" href="#catmaid_publish">catmaid_publish</a></code> fetches data from a CATMAID instance based on a configuration file.</p>
+<p>If the instance requires authentication, credentials can be passed with environment variables or a separate TOML file.</p>
+<p>The workflow looks like this:</p>
+<pre><code class="language-sh"># Empty config files will be created at these paths
+catmaid_publish_init my_config.toml --toml-credentials my_credentials.toml
+
+# Edit my_config.toml for your export needs
+# Edit my_credentials.toml with your login details (do not share or version control this file!)
+
+catmaid_publish my_config.toml my_export/ my_credentials.toml
+
+# optionally, compress export into a single zip file for transfer
+zip -r my_export.zip my_export
+</code></pre>
+<h3 id="catmaid_publish_init"><code>catmaid_publish_init</code></h3>
+<p>Use this to initialise an empty config and optional credentials files.
+If you have already set your credentials using environment variables starting with <code>CATMAID_</code>, the credentials files will be filled in.</p>
+<pre><code class="language-_catmaid_publish_init">usage: catmaid_publish_init [-h] [--toml-credentials TOML_CREDENTIALS]
+                            [--env-credentials ENV_CREDENTIALS] [--ignore-env]
+                            [--no-http-basic] [--no-token]
+                            config
+
+Write an empty config file and, optionally, credentials files.
+
+positional arguments:
+  config                Path to write TOML config
+
+options:
+  -h, --help            show this help message and exit
+  --toml-credentials TOML_CREDENTIALS, -t TOML_CREDENTIALS
+                        Path to write TOML file for credentials. Will be
+                        populated by CATMAID_* environment variables if set.
+  --env-credentials ENV_CREDENTIALS, -e ENV_CREDENTIALS
+                        Path to write env file for credentials. Will be
+                        populated by CATMAID_* environment variables if set.
+  --ignore-env, -i      Ignore CATMAID_* environment variables when writing
+                        credential files.
+  --no-http-basic, -H   Omit HTTP basic auth from credentials file.
+  --no-token, -T        Omit CATMAID API token from credentials file.
+</code></pre>
+<p>If you would prefer to write the config and credentials files yourself, see the <a href="./src/catmaid_publish/">examples here</a>.</p>
+<h3 id="configuration">Configuration</h3>
+<p>Fill in the config file using <a href="https://toml.io/en/">TOML formatting</a>.</p>
+<p>Citation information will be included with the export.
+Project information will be used to connect to CATMAID (but sensitive credentials should be stored elsewhere).</p>
+<p>For other data types, <code>all = true</code> means export all data of that type.
+Note that this can take a very long time for common data types (e.g. neurons) in large projects.
+If <code>all = false</code>, you can list the names of specific objects to be exported.
+You can also rename specific objects by mapping the old name to the new one (objects to be renamed will be added to the list of objects to export).</p>
+<p>Some objects can be annotated.
+In this case, you can instead list annotations for which annotated objects will be exported.
+Indirectly annotated ("sub-annotated") objects, e.g. the relationship between A and C in <code>annotation "A" -&gt; annotation "B" -&gt; neuron "C"</code> will also be exported.</p>
+<p>All exported data have a pre-written <code>README.md</code> file detailing the data format and structure.
+You can add additional information to the README using the <code>readme_footer</code> key.
+This string will have leading and trailing whitespace stripped, and, if still non-empty, will be appended to the default README below a thematic break.</p>
+<h3 id="authentication">Authentication</h3>
+<p>If your CATMAID instance requires authentication (with a CATMAID account and/or HTTP Basic authentication), fill in these details in a separate TOML file, or as environment variables (which can be loaded from a shell script file).</p>
+<p>Passwords, API tokens etc. <strong>MUST NOT</strong> be tracked with git.</p>
+<p>A credentials file simply looks like this:</p>
+<pre><code class="language-toml"># If your instance requires login to browse
+api_token = &quot;y0urc47ma1d70k3n&quot;
+
+# If your instance uses HTTP Basic authentication to access
+http_user = &quot;myuser&quot;
+http_password = &quot;mypassword&quot;
+</code></pre>
+<p>Or use environment variables <code>CATMAID_API_TOKEN</code>, <code>CATMAID_HTTP_USER</code>, and <code>CATMAID_HTTP_PASSWORD</code>.</p>
+<h3 id="catmaid_publish_1"><code><a title="catmaid_publish" href="#catmaid_publish">catmaid_publish</a></code></h3>
+<p>Once you have filled in the config file, use the <code><a title="catmaid_publish" href="#catmaid_publish">catmaid_publish</a></code> command to fetch and write the data, e.g.</p>
+<pre><code class="language-sh"># leave out the credentials path if you are using environment variables
+catmaid_publish path/to/config.toml path/to/output_dir path/to/credentials.toml
+</code></pre>
+<p>Full usage details are here:</p>
+<pre><code class="language-_catmaid_publish">usage: catmaid_publish [-h] config out [credentials]
+
+Export data from CATMAID in plaintext formats with simple configuration.
+
+positional arguments:
+  config       Path to TOML config file.
+  out          Path to output directory. Must not exist.
+  credentials  Optional path to TOML file containing CATMAID credentials
+               (http_user, http_password, api_token as necessary).
+               Alternatively, use environment variables with the same names
+               upper-cased and prefixed with CATMAID_.
+
+options:
+  -h, --help   show this help message and exit
+</code></pre>
+<h3 id="output">Output</h3>
+<p>README files in the output directory hierarchy describe the formats of the included data.
+All data are sorted deterministically and in plain text, and are highly compressible.</p>
+<h4 id="reading">Reading</h4>
+<p>As detailed in the top-level README of the exported data, this package contains a utility for reading an export into common python data structures for neuronal analysis.</p>
+<p>For example:</p>
+<pre><code class="language-python">from catmaid_publish import DataReader, ReadSpec, Location
+import networkx as nx
+import navis
+
+reader = DataReader(&quot;path/to/exported/data&quot;)
+
+annotation_graph: nx.DiGraph = reader.annotations.get_graph()
+neuron: navis.TreeNeuron = reader.neurons.get_by_name(
+    &quot;my neuron&quot;,
+    ReadSpec(nodes=True, connectors=False, tags=True),
+)
+landmark_locations: list[Location] = list(reader.landmarks.get_all())
+volume: navis.Volume = reader.volumes.get_by_name(&quot;my volume&quot;)
+</code></pre>
+<h3 id="tips">Tips</h3>
+<p>In general, it's most robust to use the CATMAID UI to make an annotation specifically for your export; ideally namespaced and timestamped (e.g. <code>cbarnes_export_2023-02-15</code>).
+Later exports can be a superset of this one.</p>
+<h4 id="publication">Publication</h4>
+<p>Consider running the export once to find which objects are exported,
+and determine whether any objects need renaming.
+Then update your configuration with these renames.</p>
+<h4 id="analysis-snapshot">Analysis snapshot</h4>
+<p>In large CATMAID projects, there are relatively few landmarks, volumes, and annotations compared to neurons.
+As these are all helpful for mining data, consider exporting with <code>all = true</code> for everything except neurons.
+Use the CATMAID UI (e.g. connectivity widget, graph widget, volume intersection) to annotate a superset of your neurons of interest for the export.</p>
+<p>It is easier to bounce between local analysis and use of the CATMAID UI if you do not rename any objects in this case.</p>
+<h2 id="containerisation">Containerisation</h2>
+<p>This project can be containerised with <a href="https://apptainer.org/docs/user/main/quick_start.html">apptainer</a> (formerly called Singularity)
+(bundling it with a python environment and full OS) on linux,
+so that it can be run on any system with apptainer installed.</p>
+<p>Just run <code>make container</code> (requires sudo).</p>
+<p>The python files are installed in the container at <code>/project</code>.</p>
+<p>Depending on where your config and credentials files are stored, they may be <a href="https://apptainer.org/docs/user/main/bind_paths_and_mounts.html#system-defined-bind-paths">accessible to the container by default</a>.
+Otherwise, you can manually <a href="https://apptainer.org/docs/user/main/bind_paths_and_mounts.html">bind mount</a> the containing directories inside the container at runtime:</p>
+<pre><code class="language-sh"># Find the data path your environment is using, defaulting to the local ./data
+DATA_PATH=&quot;$(pwd)/data&quot;
+CREDS_PATH=&quot;$(pwd)/credentials&quot;
+
+# Execute the command `/bin/bash` (i.e. get a terminal inside the container),
+# mounting the data directory and credentials you're already using.
+# Container file (.sif) must already be built
+apptainer exec \
+    --bind &quot;$DATA_PATH:/data&quot; \
+    --bind &quot;$CREDS_PATH:/credentials&quot; \
+    catmaid_publish.sif /bin/bash
+
+# Now you're inside the container...
+&gt;&gt;&gt; catmaid_publish_init /data/config.toml -t /credentials/my_instance.toml
+&gt;&gt;&gt; catmaid_publish /data/config.toml /data/my_export /credentials/my_instance.toml
+</code></pre>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># isort: skip_file
+import sys
+
+from .version import version as __version__  # noqa: F401
+from .version import version_tuple as __version_info__  # noqa: F401
+from .io_helpers import hash_toml
+from .main import publish_from_config
+from .reader import (
+    DataReader,
+    SkeletonReader,
+    LandmarkReader,
+    VolumeReader,
+    AnnotationReader,
+)
+from .skeletons import ReadSpec
+from .landmarks import Location
+from .volumes import AnnotatedVolume
+
+if sys.version_info &gt;= (3, 10):
+    from importlib.resources import files
+else:
+    from importlib_resources import files
+
+__doc__ = files(&#34;catmaid_publish.package_data&#34;).joinpath(&#34;README.md&#34;).read_text()
+
+__all__ = [
+    &#34;publish_from_config&#34;,
+    &#34;DataReader&#34;,
+    &#34;hash_toml&#34;,
+    &#34;ReadSpec&#34;,
+    &#34;Location&#34;,
+    &#34;SkeletonReader&#34;,
+    &#34;LandmarkReader&#34;,
+    &#34;VolumeReader&#34;,
+    &#34;AnnotatedVolume&#34;,
+    &#34;AnnotationReader&#34;,
+]</code></pre>
+</details>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="catmaid_publish.annotations" href="annotations.html">catmaid_publish.annotations</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="catmaid_publish.constants" href="constants.html">catmaid_publish.constants</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="catmaid_publish.initialise" href="initialise.html">catmaid_publish.initialise</a></code></dt>
+<dd>
+<div class="desc"><p>Write an empty config file and, optionally, credentials files.</p></div>
+</dd>
+<dt><code class="name"><a title="catmaid_publish.io_helpers" href="io_helpers.html">catmaid_publish.io_helpers</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="catmaid_publish.landmarks" href="landmarks.html">catmaid_publish.landmarks</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="catmaid_publish.main" href="main.html">catmaid_publish.main</a></code></dt>
+<dd>
+<div class="desc"><p>Export data from CATMAID in plaintext formats with simple configuration.</p></div>
+</dd>
+<dt><code class="name"><a title="catmaid_publish.reader" href="reader.html">catmaid_publish.reader</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="catmaid_publish.skeletons" href="skeletons.html">catmaid_publish.skeletons</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="catmaid_publish.utils" href="utils.html">catmaid_publish.utils</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="catmaid_publish.version" href="version.html">catmaid_publish.version</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="catmaid_publish.volumes" href="volumes.html">catmaid_publish.volumes</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="catmaid_publish.hash_toml"><code class="name flex">
+<span>def <span class="ident">hash_toml</span></span>(<span>fpath) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hash_toml(fpath) -&gt; str:
+    orig = read_toml(fpath)
+    hashable = hashable_toml_dict(orig)
+    return hex(hash(hashable))[2:]</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.publish_from_config"><code class="name flex">
+<span>def <span class="ident">publish_from_config</span></span>(<span>config_path: pathlib.Path, out_dir: pathlib.Path, creds_path: Optional[pathlib.Path] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def publish_from_config(
+    config_path: Path, out_dir: Path, creds_path: Optional[Path] = None
+):
+    timestamp = dt.datetime.utcnow().replace(tzinfo=ZoneInfo(&#34;UTC&#34;))
+    out_dir.mkdir(parents=True)
+    config = Config.from_toml(config_path)
+    config_hash = config.hex_digest()
+
+    if creds_path is not None:
+        creds = read_toml(creds_path)
+    else:
+        creds = None
+
+    project = config.get(&#34;project&#34;, default={}, as_config=False)
+    catmaid_info = {
+        &#34;server&#34;: config.get(&#34;project&#34;, &#34;server_url&#34;),
+        &#34;project_id&#34;: config.get(&#34;project&#34;, &#34;project_id&#34;),
+    }
+
+    _ = get_catmaid_instance(
+        catmaid_info,
+        creds,
+    )
+
+    with tqdm(total=4) as pbar:
+        _, ann_renames = publish_annotations(config, out_dir, pbar)
+        _ = publish_volumes(config, out_dir, ann_renames, pbar)
+        _ = publish_skeletons(config, out_dir, ann_renames, pbar)
+        _ = publish_landmarks(config, out_dir, pbar)
+
+    meta = {
+        &#34;units&#34;: project[&#34;units&#34;],
+        &#34;export&#34;: {
+            &#34;timestamp&#34;: timestamp,
+            &#34;config_hash&#34;: config_hash,
+            &#34;package&#34;: {
+                &#34;name&#34;: &#34;catmaid_publish&#34;,
+                &#34;url&#34;: &#34;https://github.com/clbarnes/catmaid_publish&#34;,
+                &#34;version&#34;: f&#34;{__version__}&#34;,
+            },
+        },
+    }
+
+    cit = config.get(&#34;citation&#34;, default=dict(), as_config=False)
+    ref = dict()
+
+    if url := cit.get(&#34;url&#34;, &#34;&#34;).strip():
+        ref[&#34;url&#34;] = url
+
+    if doi := cit.get(&#34;doi&#34;, &#34;&#34;).strip():
+        ref[&#34;doi&#34;] = f&#34;https://doi.org/{doi}&#34;
+
+    if biblatex := cit.get(&#34;biblatex&#34;, &#34;&#34;).strip():
+        multiline_strings = True
+        ref[&#34;biblatex&#34;] = biblatex
+    else:
+        multiline_strings = False
+
+    if ref:
+        meta[&#34;reference&#34;] = ref
+
+    with open(out_dir / &#34;metadata.toml&#34;, &#34;wb&#34;) as f:
+        tomli_w.dump(meta, f, multiline_strings=multiline_strings)
+
+    with open(out_dir / &#34;README.md&#34;, &#34;w&#34;) as f:
+        readme = join_markdown(
+            README,
+            project.get(README_FOOTER_KEY),
+        )
+        f.write(readme)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="catmaid_publish.AnnotatedVolume"><code class="flex name class">
+<span>class <span class="ident">AnnotatedVolume</span></span>
+<span>(</span><span>vertices: Union[list, numpy.ndarray], faces: Union[list, numpy.ndarray] = None, name: Optional[str] = None, color: Union[str, collections.abc.Sequence[Union[int, float]]] = (0.85, 0.85, 0.85, 0.2), id: Optional[int] = None, annotations: Optional[set[str]] = None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Mesh consisting of vertices and faces.</p>
+<p>Subclass of <code>trimesh.Trimesh</code> with a few additional methods.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>vertices</code></strong> :&ensp;<code>list | array | mesh-like</code></dt>
+<dd><code>(N, 3)</code> vertices coordinates or an object that has
+<code>.vertices</code> and <code>.faces</code> attributes in which case <code>faces</code>
+parameter will be ignored.</dd>
+<dt><strong><code>faces</code></strong> :&ensp;<code>list | array</code></dt>
+<dd><code>(M, 3)</code> array of indexed triangle faces.</dd>
+<dt><strong><code>name</code></strong> :&ensp;<code>
+str</code>, optional</dt>
+<dd>A name for the volume.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>
+tuple</code>, optional</dt>
+<dd>RGB(A) color.</dd>
+<dt><strong><code>id</code></strong> :&ensp;<code>
+int</code>, optional</dt>
+<dd>If not provided, neuron will be assigned a random UUID as <code>.id</code>.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments passed through to <code>trimesh.Trimesh</code></dd>
+</dl>
+<h2 id="see-also">See Also</h2>
+<p><code>:func:</code>~navis.example_volume<code> Loads example volume(s).</code></p>
+<p><code>A Trimesh object contains a triangular 3D mesh.</code></p>
+<h2 id="parameters_1">Parameters</h2>
+<dl>
+<dt><strong><code>vertices</code></strong> :&ensp;<code>(n, 3) float</code></dt>
+<dd>&nbsp;</dd>
+<dt>Array of vertex locations</dt>
+<dt><strong><code>faces</code></strong> :&ensp;<code>(m, 3)</code> or <code>(m, 4) int</code></dt>
+<dd>&nbsp;</dd>
+<dt>Array of triangular or quad faces (triangulated on load)</dt>
+<dt><strong><code>face_normals</code></strong> :&ensp;<code>(m, 3) float</code></dt>
+<dd>&nbsp;</dd>
+<dt>Array of normal vectors corresponding to faces</dt>
+<dt><strong><code>vertex_normals</code></strong> :&ensp;<code>(n, 3) float</code></dt>
+<dd>&nbsp;</dd>
+<dt>Array of normal vectors for vertices</dt>
+<dt><strong><code>metadata</code></strong> :&ensp;<code>dict</code></dt>
+<dd>&nbsp;</dd>
+<dt>Any metadata about the mesh</dt>
+<dt><strong><code>process</code></strong> :&ensp;<code>bool</code></dt>
+<dd>&nbsp;</dd>
+<dt>if True, Nan and Inf values will be removed</dt>
+<dt>immediately and vertices will be merged</dt>
+<dt><strong><code>validate</code></strong> :&ensp;<code>bool</code></dt>
+<dd>&nbsp;</dd>
+<dt>If True, degenerate and duplicate faces will be</dt>
+<dt>removed immediately, and some functions will alter</dt>
+<dt>the mesh to ensure consistent results.</dt>
+<dt><strong><code>use_embree</code></strong> :&ensp;<code>bool</code></dt>
+<dd>&nbsp;</dd>
+<dt>If True try to use pyembree raytracer.</dt>
+<dt>If pyembree is not available it will automatically fall</dt>
+<dt>back to a much slower rtree/numpy implementation</dt>
+<dt><strong><code>initial_cache</code></strong> :&ensp;<code>dict</code></dt>
+<dd>&nbsp;</dd>
+<dt>A way to pass things to the cache in case expensive</dt>
+<dt>things were calculated before creating the mesh object.</dt>
+<dt><strong><code>visual</code></strong> :&ensp;<code>ColorVisuals</code> or <code>TextureVisuals</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>Assigned to self.visual</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AnnotatedVolume(navis.Volume):
+    def __init__(
+        self,
+        vertices: Union[list, np.ndarray],
+        faces: Union[list, np.ndarray] = None,
+        name: Optional[str] = None,
+        color: Union[str, Sequence[Union[int, float]]] = (0.85, 0.85, 0.85, 0.2),
+        id: Optional[int] = None,
+        annotations: Optional[set[str]] = None,
+        **kwargs,
+    ):
+        super().__init__(vertices, faces, name, color, id, **kwargs)
+        self.annotations = set() if not annotations else set(annotations)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>navis.core.volumes.Volume</li>
+<li>trimesh.base.Trimesh</li>
+<li>trimesh.parent.Geometry3D</li>
+<li>trimesh.parent.Geometry</li>
+<li>abc.ABC</li>
+</ul>
+</dd>
+<dt id="catmaid_publish.AnnotationReader"><code class="flex name class">
+<span>class <span class="ident">AnnotationReader</span></span>
+<span>(</span><span>dpath: pathlib.Path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class for reading exported annotation data.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dpath</code></strong> :&ensp;<code>Path</code></dt>
+<dd>Directory in which the annotation data is saved.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AnnotationReader:
+    &#34;&#34;&#34;Class for reading exported annotation data.&#34;&#34;&#34;
+
+    def __init__(self, dpath: Path) -&gt; None:
+        &#34;&#34;&#34;
+        Parameters
+        ----------
+        dpath : Path
+            Directory in which the annotation data is saved.
+        &#34;&#34;&#34;
+        self.dpath = dpath
+
+    @copy_cache()
+    def get_graph(self) -&gt; nx.DiGraph:
+        &#34;&#34;&#34;Return the saved graph of text annotations.
+
+        Returns
+        -------
+        nx.DiGraph
+            Directed graph of text annotations,
+            where an edge denotes the source annotating the target.
+            All nodes have attributes ``type=&#34;annotation``;
+            all edges have attributes ``meta_annotation=True``.
+        &#34;&#34;&#34;
+        with open(self.dpath / &#34;annotation_graph.json&#34;) as f:
+            d = json.load(f)
+
+        g = nx.DiGraph()
+        for u, vs in d.items():
+            for v in vs:
+                g.add_edge(u, v, meta_annotation=True)
+
+        for _, d in g.nodes(data=True):
+            d[&#34;type&#34;] = &#34;annotation&#34;
+
+        return g</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="catmaid_publish.AnnotationReader.get_graph"><code class="name flex">
+<span>def <span class="ident">get_graph</span></span>(<span>self) ‑> networkx.classes.digraph.DiGraph</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return the saved graph of text annotations.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>nx.DiGraph</code></dt>
+<dd>Directed graph of text annotations,
+where an edge denotes the source annotating the target.
+All nodes have attributes <code>type="annotation</code>;
+all edges have attributes <code>meta_annotation=True</code>.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@copy_cache()
+def get_graph(self) -&gt; nx.DiGraph:
+    &#34;&#34;&#34;Return the saved graph of text annotations.
+
+    Returns
+    -------
+    nx.DiGraph
+        Directed graph of text annotations,
+        where an edge denotes the source annotating the target.
+        All nodes have attributes ``type=&#34;annotation``;
+        all edges have attributes ``meta_annotation=True``.
+    &#34;&#34;&#34;
+    with open(self.dpath / &#34;annotation_graph.json&#34;) as f:
+        d = json.load(f)
+
+    g = nx.DiGraph()
+    for u, vs in d.items():
+        for v in vs:
+            g.add_edge(u, v, meta_annotation=True)
+
+    for _, d in g.nodes(data=True):
+        d[&#34;type&#34;] = &#34;annotation&#34;
+
+    return g</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="catmaid_publish.DataReader"><code class="flex name class">
+<span>class <span class="ident">DataReader</span></span>
+<span>(</span><span>dpath: pathlib.Path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class for reading exported data.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>metadata</code></strong> :&ensp;<code>Optional[dict[str, Any]]</code></dt>
+<dd>Various metadata of export, if present.</dd>
+<dt><strong><code>volumes</code></strong> :&ensp;<code>Optional[<a title="catmaid_publish.VolumeReader" href="#catmaid_publish.VolumeReader">VolumeReader</a>]</code></dt>
+<dd>Reader for volume data, if present.</dd>
+<dt><strong><code>landmarks</code></strong> :&ensp;<code>Optional[<a title="catmaid_publish.LandmarkReader" href="#catmaid_publish.LandmarkReader">LandmarkReader</a>]</code></dt>
+<dd>Reader for landmark data, if present.</dd>
+<dt><strong><code>neurons</code></strong> :&ensp;<code>Optional[<a title="catmaid_publish.SkeletonReader" href="#catmaid_publish.SkeletonReader">SkeletonReader</a>]</code></dt>
+<dd>Reader for neuronal/ skeleton data, if present.</dd>
+<dt><strong><code>annotations</code></strong> :&ensp;<code>Optional[<a title="catmaid_publish.AnnotationReader" href="#catmaid_publish.AnnotationReader">AnnotationReader</a>]</code></dt>
+<dd>Reader for annotation data, if present.</dd>
+</dl>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dpath</code></strong> :&ensp;<code>Path</code></dt>
+<dd>Directory in which all data is saved.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DataReader:
+    &#34;&#34;&#34;Class for reading exported data.
+
+    Attributes
+    ----------
+    metadata : Optional[dict[str, Any]]
+        Various metadata of export, if present.
+    volumes : Optional[VolumeReader]
+        Reader for volume data, if present.
+    landmarks : Optional[LandmarkReader]
+        Reader for landmark data, if present.
+    neurons : Optional[SkeletonReader]
+        Reader for neuronal/ skeleton data, if present.
+    annotations : Optional[AnnotationReader]
+        Reader for annotation data, if present.
+    &#34;&#34;&#34;
+
+    def __init__(self, dpath: Path) -&gt; None:
+        &#34;&#34;&#34;
+        Parameters
+        ----------
+        dpath : Path
+            Directory in which all data is saved.
+        &#34;&#34;&#34;
+        self.dpath = Path(dpath)
+
+        meta_path = self.dpath / &#34;metadata.toml&#34;
+        if meta_path.is_file():
+            self.metadata = read_toml(meta_path)
+        else:
+            self.metadata = None
+
+        self.volumes = (
+            VolumeReader(dpath / &#34;volumes&#34;) if (dpath / &#34;volumes&#34;).is_dir() else None
+        )
+        self.landmarks = (
+            LandmarkReader(dpath / &#34;landmarks&#34;)
+            if (dpath / &#34;landmarks&#34;).is_dir()
+            else None
+        )
+        self.neurons = (
+            SkeletonReader(
+                dpath / &#34;neurons&#34;,
+                self.metadata.get(&#34;units&#34;) if self.metadata else None,
+            )
+            if (dpath / &#34;neurons&#34;).is_dir()
+            else None
+        )
+        self.annotations = (
+            AnnotationReader(dpath / &#34;annotations&#34;)
+            if (dpath / &#34;annotations&#34;).is_dir()
+            else None
+        )
+
+    def get_metadata(self, *keys: str, default=NO_DEFAULT):
+        &#34;&#34;&#34;Get values from nested metadata dict.
+
+        e.g. to retrieve possibly-absent ``myvalue`` from metadata like
+        ``{&#34;A&#34;: {&#34;B&#34;: myvalue}}``, use
+        ``my_reader.get_metadata(&#34;A&#34;, &#34;B&#34;, default=None)``.
+
+        Parameters
+        ----------
+        *keys : str
+            String keys for accessing nested values.
+        default : any, optional
+            Value to return if key is not present, at any level.
+            By default, raises a ``KeyError``.
+
+        Returns
+        -------
+        Any
+
+        Raises
+        ------
+        KeyError
+            Key does not exist and no default given.
+        &#34;&#34;&#34;
+        if self.metadata is None:
+            if default is not NO_DEFAULT:
+                return default
+            elif keys:
+                raise KeyError(keys[0])
+            else:
+                return None
+
+        d = self.metadata
+        for k in keys:
+            try:
+                d = d[k]
+            except KeyError as e:
+                if default is NO_DEFAULT:
+                    raise e
+                return default
+        return d
+
+    def get_full_annotation_graph(self) -&gt; nx.DiGraph:
+        &#34;&#34;&#34;Get annotation graph including meta-annotations and neurons.
+
+        Returns
+        -------
+        nx.DiGraph
+            Edges are from annotation name to annotation, neuronm or volume name.
+            Nodes have attribute ``&#34;type&#34;``,
+            which is either ``&#34;annotation&#34;``, ``&#34;neuron&#34;``, or ``&#34;volume&#34;``.
+            Edges have a boolean attribute ``&#34;meta_annotation&#34;``
+            (whether the target is an annotation).
+        &#34;&#34;&#34;
+        g = nx.DiGraph()
+        if self.annotations:
+            g.update(self.annotations.get_graph())
+        if self.neurons:
+            g.update(self.neurons.get_annotation_graph())
+        if self.volumes:
+            g.update(self.volumes.get_annotation_graph())
+        return g</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="catmaid_publish.DataReader.get_full_annotation_graph"><code class="name flex">
+<span>def <span class="ident">get_full_annotation_graph</span></span>(<span>self) ‑> networkx.classes.digraph.DiGraph</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get annotation graph including meta-annotations and neurons.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>nx.DiGraph</code></dt>
+<dd>Edges are from annotation name to annotation, neuronm or volume name.
+Nodes have attribute <code>"type"</code>,
+which is either <code>"annotation"</code>, <code>"neuron"</code>, or <code>"volume"</code>.
+Edges have a boolean attribute <code>"meta_annotation"</code>
+(whether the target is an annotation).</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_full_annotation_graph(self) -&gt; nx.DiGraph:
+    &#34;&#34;&#34;Get annotation graph including meta-annotations and neurons.
+
+    Returns
+    -------
+    nx.DiGraph
+        Edges are from annotation name to annotation, neuronm or volume name.
+        Nodes have attribute ``&#34;type&#34;``,
+        which is either ``&#34;annotation&#34;``, ``&#34;neuron&#34;``, or ``&#34;volume&#34;``.
+        Edges have a boolean attribute ``&#34;meta_annotation&#34;``
+        (whether the target is an annotation).
+    &#34;&#34;&#34;
+    g = nx.DiGraph()
+    if self.annotations:
+        g.update(self.annotations.get_graph())
+    if self.neurons:
+        g.update(self.neurons.get_annotation_graph())
+    if self.volumes:
+        g.update(self.volumes.get_annotation_graph())
+    return g</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.DataReader.get_metadata"><code class="name flex">
+<span>def <span class="ident">get_metadata</span></span>(<span>self, *keys: str, default=&lt;object object&gt;)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get values from nested metadata dict.</p>
+<p>e.g. to retrieve possibly-absent <code>myvalue</code> from metadata like
+<code>{"A": {"B": myvalue}}</code>, use
+<code>my_reader.get_metadata("A", "B", default=None)</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>*keys</code></strong> :&ensp;<code>str</code></dt>
+<dd>String keys for accessing nested values.</dd>
+<dt><strong><code>default</code></strong> :&ensp;<code>any</code>, optional</dt>
+<dd>Value to return if key is not present, at any level.
+By default, raises a <code>KeyError</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Any</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>KeyError</code></dt>
+<dd>Key does not exist and no default given.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_metadata(self, *keys: str, default=NO_DEFAULT):
+    &#34;&#34;&#34;Get values from nested metadata dict.
+
+    e.g. to retrieve possibly-absent ``myvalue`` from metadata like
+    ``{&#34;A&#34;: {&#34;B&#34;: myvalue}}``, use
+    ``my_reader.get_metadata(&#34;A&#34;, &#34;B&#34;, default=None)``.
+
+    Parameters
+    ----------
+    *keys : str
+        String keys for accessing nested values.
+    default : any, optional
+        Value to return if key is not present, at any level.
+        By default, raises a ``KeyError``.
+
+    Returns
+    -------
+    Any
+
+    Raises
+    ------
+    KeyError
+        Key does not exist and no default given.
+    &#34;&#34;&#34;
+    if self.metadata is None:
+        if default is not NO_DEFAULT:
+            return default
+        elif keys:
+            raise KeyError(keys[0])
+        else:
+            return None
+
+    d = self.metadata
+    for k in keys:
+        try:
+            d = d[k]
+        except KeyError as e:
+            if default is NO_DEFAULT:
+                raise e
+            return default
+    return d</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="catmaid_publish.LandmarkReader"><code class="flex name class">
+<span>class <span class="ident">LandmarkReader</span></span>
+<span>(</span><span>dpath: Path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class for reading exported landmark data.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dpath</code></strong> :&ensp;<code>Path</code></dt>
+<dd>Directory in which landmark data is saved.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LandmarkReader:
+    &#34;&#34;&#34;Class for reading exported landmark data.&#34;&#34;&#34;
+
+    def __init__(self, dpath: Path) -&gt; None:
+        &#34;&#34;&#34;
+        Parameters
+        ----------
+        dpath : Path
+            Directory in which landmark data is saved.
+        &#34;&#34;&#34;
+        self.dpath = dpath
+        self.fpath = dpath / &#34;locations.json&#34;
+
+    @copy_cache()
+    def _locations(self):
+        with open(self.fpath) as f:
+            d = json.load(f)
+
+        return [Location.from_jso(loc) for loc in d]
+
+    def get_all(self) -&gt; Iterable[Location]:
+        &#34;&#34;&#34;Lazily iterate through landmark locations.
+
+        Yields
+        ------
+        Location
+        &#34;&#34;&#34;
+        yield from self._locations()
+
+    def get_group_names(self) -&gt; set[str]:
+        &#34;&#34;&#34;Return all groups with locations in the dataset.
+
+        Returns
+        -------
+        set[str]
+            Set of group names.
+        &#34;&#34;&#34;
+        out = set()
+        for loc in self._locations():
+            out.update(loc.groups)
+        return out
+
+    def get_landmark_names(self) -&gt; set[str]:
+        &#34;&#34;&#34;Return all landmarks with locations in the dataset.
+
+        Returns
+        -------
+        set[str]
+            Set of landmark names.
+        &#34;&#34;&#34;
+        out = set()
+        for loc in self._locations():
+            out.update(loc.landmarks)
+        return out
+
+    def get_group(self, *group: str) -&gt; Iterable[Location]:
+        &#34;&#34;&#34;Lazily iterate through all locations from any of the given groups.
+
+        Parameters
+        ----------
+        group : str
+            Group name (can give multiple as *args).
+
+        Yields
+        ------
+        Location
+        &#34;&#34;&#34;
+        groupset = set(group)
+        for loc in self._locations():
+            if not loc.groups.isdisjoint(groupset):
+                yield loc
+
+    def get_landmark(self, *landmark: str) -&gt; Iterable[Location]:
+        &#34;&#34;&#34;Lazily iterate through all locations from any of the given landmarks.
+
+        Parameters
+        ----------
+        landmark : str
+            Landmark name (can give multiple as *args)
+
+        Yields
+        ------
+        Location
+        &#34;&#34;&#34;
+        lmarkset = set(landmark)
+        for loc in self._locations():
+            if not loc.landmarks.isdisjoint(lmarkset):
+                yield loc
+
+    def get_paired_locations(
+        self, group1: str, group2: str
+    ) -&gt; Iterable[tuple[Location, Location]]:
+        &#34;&#34;&#34;Iterate through paired locations.
+
+        Locations are paired when both belong to the same landmark,
+        and each location is the only one of that landmark to exist in that group,
+        and they are not the same location.
+
+        This is useful for creating transformations between two spaces
+        (as landmark groups) by shared features (as landmarks).
+
+        Parameters
+        ----------
+        group1 : str
+            Group name
+        group2 : str
+            Group name
+
+        Yields
+        ------
+        tuple[Location, Location]
+        &#34;&#34;&#34;
+        la_lo1: dict[str, list[Location]] = dict()
+        la_lo2: dict[str, list[Location]] = dict()
+        for loc in self._locations():
+            if group1 in loc.groups:
+                if group2 in loc.groups:
+                    continue
+                for landmark in loc.landmarks:
+                    la_lo1.setdefault(landmark, []).append(loc)
+            elif group2 in loc.groups:
+                for landmark in loc.landmarks:
+                    la_lo2.setdefault(landmark, []).append(loc)
+
+        landmarks = sorted(set(la_lo1).intersection(la_lo2))
+        for la in landmarks:
+            lo1 = la_lo1[la]
+            if len(lo1) != 1:
+                continue
+            lo2 = la_lo2[la]
+            if len(lo2) != 1:
+                continue
+
+            yield lo1[0], lo2[0]</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="catmaid_publish.LandmarkReader.get_all"><code class="name flex">
+<span>def <span class="ident">get_all</span></span>(<span>self) ‑> Iterable[<a title="catmaid_publish.landmarks.Location" href="landmarks.html#catmaid_publish.landmarks.Location">Location</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lazily iterate through landmark locations.</p>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code><a title="catmaid_publish.Location" href="#catmaid_publish.Location">Location</a></code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_all(self) -&gt; Iterable[Location]:
+    &#34;&#34;&#34;Lazily iterate through landmark locations.
+
+    Yields
+    ------
+    Location
+    &#34;&#34;&#34;
+    yield from self._locations()</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.LandmarkReader.get_group"><code class="name flex">
+<span>def <span class="ident">get_group</span></span>(<span>self, *group: str) ‑> Iterable[<a title="catmaid_publish.landmarks.Location" href="landmarks.html#catmaid_publish.landmarks.Location">Location</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lazily iterate through all locations from any of the given groups.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>group</code></strong> :&ensp;<code>str</code></dt>
+<dd>Group name (can give multiple as *args).</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code><a title="catmaid_publish.Location" href="#catmaid_publish.Location">Location</a></code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_group(self, *group: str) -&gt; Iterable[Location]:
+    &#34;&#34;&#34;Lazily iterate through all locations from any of the given groups.
+
+    Parameters
+    ----------
+    group : str
+        Group name (can give multiple as *args).
+
+    Yields
+    ------
+    Location
+    &#34;&#34;&#34;
+    groupset = set(group)
+    for loc in self._locations():
+        if not loc.groups.isdisjoint(groupset):
+            yield loc</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.LandmarkReader.get_group_names"><code class="name flex">
+<span>def <span class="ident">get_group_names</span></span>(<span>self) ‑> set[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return all groups with locations in the dataset.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>set[str]</code></dt>
+<dd>Set of group names.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_group_names(self) -&gt; set[str]:
+    &#34;&#34;&#34;Return all groups with locations in the dataset.
+
+    Returns
+    -------
+    set[str]
+        Set of group names.
+    &#34;&#34;&#34;
+    out = set()
+    for loc in self._locations():
+        out.update(loc.groups)
+    return out</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.LandmarkReader.get_landmark"><code class="name flex">
+<span>def <span class="ident">get_landmark</span></span>(<span>self, *landmark: str) ‑> Iterable[<a title="catmaid_publish.landmarks.Location" href="landmarks.html#catmaid_publish.landmarks.Location">Location</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lazily iterate through all locations from any of the given landmarks.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>landmark</code></strong> :&ensp;<code>str</code></dt>
+<dd>Landmark name (can give multiple as *args)</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code><a title="catmaid_publish.Location" href="#catmaid_publish.Location">Location</a></code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_landmark(self, *landmark: str) -&gt; Iterable[Location]:
+    &#34;&#34;&#34;Lazily iterate through all locations from any of the given landmarks.
+
+    Parameters
+    ----------
+    landmark : str
+        Landmark name (can give multiple as *args)
+
+    Yields
+    ------
+    Location
+    &#34;&#34;&#34;
+    lmarkset = set(landmark)
+    for loc in self._locations():
+        if not loc.landmarks.isdisjoint(lmarkset):
+            yield loc</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.LandmarkReader.get_landmark_names"><code class="name flex">
+<span>def <span class="ident">get_landmark_names</span></span>(<span>self) ‑> set[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return all landmarks with locations in the dataset.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>set[str]</code></dt>
+<dd>Set of landmark names.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_landmark_names(self) -&gt; set[str]:
+    &#34;&#34;&#34;Return all landmarks with locations in the dataset.
+
+    Returns
+    -------
+    set[str]
+        Set of landmark names.
+    &#34;&#34;&#34;
+    out = set()
+    for loc in self._locations():
+        out.update(loc.landmarks)
+    return out</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.LandmarkReader.get_paired_locations"><code class="name flex">
+<span>def <span class="ident">get_paired_locations</span></span>(<span>self, group1: str, group2: str) ‑> Iterable[tuple[<a title="catmaid_publish.landmarks.Location" href="landmarks.html#catmaid_publish.landmarks.Location">Location</a>, <a title="catmaid_publish.landmarks.Location" href="landmarks.html#catmaid_publish.landmarks.Location">Location</a>]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Iterate through paired locations.</p>
+<p>Locations are paired when both belong to the same landmark,
+and each location is the only one of that landmark to exist in that group,
+and they are not the same location.</p>
+<p>This is useful for creating transformations between two spaces
+(as landmark groups) by shared features (as landmarks).</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>group1</code></strong> :&ensp;<code>str</code></dt>
+<dd>Group name</dd>
+<dt><strong><code>group2</code></strong> :&ensp;<code>str</code></dt>
+<dd>Group name</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code>tuple[<a title="catmaid_publish.Location" href="#catmaid_publish.Location">Location</a>, <a title="catmaid_publish.Location" href="#catmaid_publish.Location">Location</a>]</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_paired_locations(
+    self, group1: str, group2: str
+) -&gt; Iterable[tuple[Location, Location]]:
+    &#34;&#34;&#34;Iterate through paired locations.
+
+    Locations are paired when both belong to the same landmark,
+    and each location is the only one of that landmark to exist in that group,
+    and they are not the same location.
+
+    This is useful for creating transformations between two spaces
+    (as landmark groups) by shared features (as landmarks).
+
+    Parameters
+    ----------
+    group1 : str
+        Group name
+    group2 : str
+        Group name
+
+    Yields
+    ------
+    tuple[Location, Location]
+    &#34;&#34;&#34;
+    la_lo1: dict[str, list[Location]] = dict()
+    la_lo2: dict[str, list[Location]] = dict()
+    for loc in self._locations():
+        if group1 in loc.groups:
+            if group2 in loc.groups:
+                continue
+            for landmark in loc.landmarks:
+                la_lo1.setdefault(landmark, []).append(loc)
+        elif group2 in loc.groups:
+            for landmark in loc.landmarks:
+                la_lo2.setdefault(landmark, []).append(loc)
+
+    landmarks = sorted(set(la_lo1).intersection(la_lo2))
+    for la in landmarks:
+        lo1 = la_lo1[la]
+        if len(lo1) != 1:
+            continue
+        lo2 = la_lo2[la]
+        if len(lo2) != 1:
+            continue
+
+        yield lo1[0], lo2[0]</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="catmaid_publish.Location"><code class="flex name class">
+<span>class <span class="ident">Location</span></span>
+<span>(</span><span>xyz: tuple[float, float, float], groups: set[str] = &lt;factory&gt;, landmarks: set[str] = &lt;factory&gt;)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Location of importance to landmarks and groups.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>xyz</code></strong> :&ensp;<code>tuple[float, float, float]</code></dt>
+<dd>Coordinates of location</dd>
+<dt><strong><code>groups</code></strong> :&ensp;<code>set[str]</code></dt>
+<dd>Set of landmark groups this location belongs to.</dd>
+<dt><strong><code>landmarks</code></strong> :&ensp;<code>set[str]</code></dt>
+<dd>Set of landmarks this location belongs to.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@dataclass
+class Location:
+    &#34;&#34;&#34;Location of importance to landmarks and groups.
+
+    Attributes
+    ----------
+    xyz : tuple[float, float, float]
+        Coordinates of location
+    groups : set[str]
+        Set of landmark groups this location belongs to.
+    landmarks : set[str]
+        Set of landmarks this location belongs to.
+    &#34;&#34;&#34;
+
+    xyz: tuple[float, float, float]
+    groups: set[str] = field(default_factory=set)
+    landmarks: set[str] = field(default_factory=set)
+
+    def to_jso(self) -&gt; dict[str, Any]:
+        &#34;&#34;&#34;Convert to JSON-serialisable object.
+
+        Returns
+        -------
+        dict[str, Any]
+        &#34;&#34;&#34;
+        d = asdict(self)
+        d[&#34;xyz&#34;] = list(d[&#34;xyz&#34;])
+        d[&#34;groups&#34;] = sorted(d[&#34;groups&#34;])
+        d[&#34;landmarks&#34;] = sorted(d[&#34;landmarks&#34;])
+        return d
+
+    @classmethod
+    def from_jso(cls, jso: dict[str, Any]) -&gt; Location:
+        &#34;&#34;&#34;Instantiate from JSON-like dict.
+
+        Parameters
+        ----------
+        jso : dict[str, Any]
+            Keys ``&#34;xyz&#34;`` (3-length list of float),
+            ``&#34;groups&#34;`` (list of str),
+            ``&#34;landmarks&#34;`` (list of str)
+
+        Returns
+        -------
+        Location
+        &#34;&#34;&#34;
+        return cls(
+            tuple(jso[&#34;xyz&#34;]),
+            set(jso[&#34;groups&#34;]),
+            set(jso[&#34;landmarks&#34;]),
+        )</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="catmaid_publish.Location.groups"><code class="name">var <span class="ident">groups</span> : set[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="catmaid_publish.Location.landmarks"><code class="name">var <span class="ident">landmarks</span> : set[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="catmaid_publish.Location.xyz"><code class="name">var <span class="ident">xyz</span> : tuple[float, float, float]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="catmaid_publish.Location.from_jso"><code class="name flex">
+<span>def <span class="ident">from_jso</span></span>(<span>jso: dict[str, Any]) ‑> <a title="catmaid_publish.landmarks.Location" href="landmarks.html#catmaid_publish.landmarks.Location">Location</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Instantiate from JSON-like dict.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>jso</code></strong> :&ensp;<code>dict[str, Any]</code></dt>
+<dd>Keys <code>"xyz"</code> (3-length list of float),
+<code>"groups"</code> (list of str),
+<code>"landmarks"</code> (list of str)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="catmaid_publish.Location" href="#catmaid_publish.Location">Location</a></code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def from_jso(cls, jso: dict[str, Any]) -&gt; Location:
+    &#34;&#34;&#34;Instantiate from JSON-like dict.
+
+    Parameters
+    ----------
+    jso : dict[str, Any]
+        Keys ``&#34;xyz&#34;`` (3-length list of float),
+        ``&#34;groups&#34;`` (list of str),
+        ``&#34;landmarks&#34;`` (list of str)
+
+    Returns
+    -------
+    Location
+    &#34;&#34;&#34;
+    return cls(
+        tuple(jso[&#34;xyz&#34;]),
+        set(jso[&#34;groups&#34;]),
+        set(jso[&#34;landmarks&#34;]),
+    )</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="catmaid_publish.Location.to_jso"><code class="name flex">
+<span>def <span class="ident">to_jso</span></span>(<span>self) ‑> dict[str, typing.Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert to JSON-serialisable object.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict[str, Any]</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_jso(self) -&gt; dict[str, Any]:
+    &#34;&#34;&#34;Convert to JSON-serialisable object.
+
+    Returns
+    -------
+    dict[str, Any]
+    &#34;&#34;&#34;
+    d = asdict(self)
+    d[&#34;xyz&#34;] = list(d[&#34;xyz&#34;])
+    d[&#34;groups&#34;] = sorted(d[&#34;groups&#34;])
+    d[&#34;landmarks&#34;] = sorted(d[&#34;landmarks&#34;])
+    return d</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="catmaid_publish.ReadSpec"><code class="flex name class">
+<span>class <span class="ident">ReadSpec</span></span>
+<span>(</span><span>nodes: bool = True, connectors: bool = True, tags: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specify a subset of a skeleton's data to read.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ReadSpec(NamedTuple):
+    &#34;&#34;&#34;Specify a subset of a skeleton&#39;s data to read.&#34;&#34;&#34;
+
+    nodes: bool = True
+    connectors: bool = True
+    tags: bool = True
+
+    def copy(self, nodes=None, connectors=None, tags=None):
+        return type(self)(
+            nodes=nodes if nodes is not None else self.nodes,
+            connectors=connectors if connectors is not None else self.connectors,
+            tags=tags if tags is not None else self.tags,
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.tuple</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="catmaid_publish.ReadSpec.connectors"><code class="name">var <span class="ident">connectors</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 1</p></div>
+</dd>
+<dt id="catmaid_publish.ReadSpec.nodes"><code class="name">var <span class="ident">nodes</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 0</p></div>
+</dd>
+<dt id="catmaid_publish.ReadSpec.tags"><code class="name">var <span class="ident">tags</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 2</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="catmaid_publish.ReadSpec.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self, nodes=None, connectors=None, tags=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def copy(self, nodes=None, connectors=None, tags=None):
+    return type(self)(
+        nodes=nodes if nodes is not None else self.nodes,
+        connectors=connectors if connectors is not None else self.connectors,
+        tags=tags if tags is not None else self.tags,
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="catmaid_publish.SkeletonReader"><code class="flex name class">
+<span>class <span class="ident">SkeletonReader</span></span>
+<span>(</span><span>dpath: pathlib.Path, units=None, read_spec=ReadSpec(nodes=True, connectors=True, tags=True))</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class for reading exported skeletonised neuron data.</p>
+<p>Most "get_" methods take a <code>read_spec</code> argument.
+This is a 3-(named)tuple of bools representing
+whether to populate the nodes, connectors, and tags fields
+of the returned TreeNeuron objects.
+By default, all will be populated.
+Metadata is always populated.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dpath</code></strong> :&ensp;<code>Path</code></dt>
+<dd>Directory in which the neuron data is saved.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SkeletonReader:
+    &#34;&#34;&#34;Class for reading exported skeletonised neuron data.
+
+    Most &#34;get_&#34; methods take a ``read_spec`` argument.
+    This is a 3-(named)tuple of bools representing
+    whether to populate the nodes, connectors, and tags fields
+    of the returned TreeNeuron objects.
+    By default, all will be populated.
+    Metadata is always populated.
+    &#34;&#34;&#34;
+
+    def __init__(self, dpath: Path, units=None, read_spec=ReadSpec()) -&gt; None:
+        &#34;&#34;&#34;
+        Parameters
+        ----------
+        dpath : Path
+            Directory in which the neuron data is saved.
+        &#34;&#34;&#34;
+        self.dpath = dpath
+        self.units = units
+        self.default_read_spec = ReadSpec(*read_spec)
+
+    @copy_cache(maxsize=CACHE_SIZE)
+    def _read_meta(self, dpath):
+        return json.loads((dpath / &#34;metadata.json&#34;).read_text())
+
+    @copy_cache(maxsize=CACHE_SIZE)
+    def _read_nodes(self, dpath):
+        return pd.read_csv(dpath / &#34;nodes.tsv&#34;, sep=&#34;\t&#34;)
+
+    @copy_cache(maxsize=CACHE_SIZE)
+    def _read_tags(self, dpath):
+        return json.loads((dpath / &#34;tags.json&#34;).read_text())
+
+    @copy_cache(maxsize=CACHE_SIZE)
+    def _read_connectors(self, dpath):
+        conns = pd.read_csv(dpath / &#34;connectors.tsv&#34;, sep=&#34;\t&#34;)
+        conns.rename(columns={&#34;is_input&#34;: &#34;type&#34;}, inplace=True)
+        return conns
+
+    def parse_read_spec(self, read_spec: Optional[Sequence[bool]] = None) -&gt; ReadSpec:
+        if read_spec is None:
+            read_spec = self.default_read_spec
+        else:
+            read_spec = ReadSpec(*read_spec)
+        return read_spec
+
+    def _construct_neuron(self, meta, nodes=None, tags=None, connectors=None):
+        nrn = navis.TreeNeuron(nodes, self.units, annotations=meta[&#34;annotations&#34;])
+        nrn.id = meta[&#34;id&#34;]
+        nrn.name = meta[&#34;name&#34;]
+        nrn.soma = meta[&#34;soma_id&#34;]
+
+        nrn.tags = tags
+        nrn.connectors = connectors
+        return nrn
+
+    def _read_neuron(
+        self, dpath, read_spec: Optional[ReadSpec] = None
+    ) -&gt; navis.TreeNeuron:
+        read_spec = self.parse_read_spec(read_spec)
+
+        meta = self._read_meta(dpath)
+
+        if read_spec.nodes:
+            nodes = self._read_nodes(dpath)
+        else:
+            nodes = None
+
+        if read_spec.tags:
+            tags = self._read_tags(dpath)
+        else:
+            tags = None
+
+        if read_spec.connectors:
+            connectors = self._read_connectors(dpath)
+        else:
+            connectors = None
+
+        return self._construct_neuron(meta, nodes, tags, connectors)
+
+    def get_by_id(
+        self, skeleton_id: int, read_spec: Optional[ReadSpec] = None
+    ) -&gt; navis.TreeNeuron:
+        &#34;&#34;&#34;Read neuron with the given skeleton ID.
+
+        Parameters
+        ----------
+        skeleton_id : int
+
+        Returns
+        -------
+        navis.TreeNeuron
+        &#34;&#34;&#34;
+        return self._read_neuron(self.dpath / str(skeleton_id), read_spec)
+
+    def _iter_dirs(self):
+        for path in self.dpath.iterdir():
+            if path.is_dir():
+                yield path
+
+    @lru_cache
+    def name_to_id(self) -&gt; dict[str, int]:
+        &#34;&#34;&#34;Mapping from neuron name to skeleton ID.
+
+        Returns
+        -------
+        dict[str, int]
+        &#34;&#34;&#34;
+        out = dict()
+
+        for dpath in self._iter_dirs():
+            meta = self._read_meta(dpath)
+            out[meta[&#34;name&#34;]] = meta[&#34;id&#34;]
+
+        return out
+
+    @lru_cache
+    def annotation_to_ids(self) -&gt; dict[str, list[int]]:
+        &#34;&#34;&#34;Which skeletons string annotations are applied to.
+
+        Returns
+        -------
+        dict[str, list[int]]
+            Mapping from annotation name to list of skeleton IDs.
+        &#34;&#34;&#34;
+        out: dict[str, list[int]] = dict()
+
+        for dpath in self._iter_dirs():
+            meta = self._read_meta(dpath)
+            for ann in meta[&#34;annotations&#34;]:
+                out.setdefault(ann, []).append(meta[&#34;id&#34;])
+
+        return out
+
+    def get_by_name(
+        self, name: str, read_spec: Optional[ReadSpec] = None
+    ) -&gt; navis.TreeNeuron:
+        &#34;&#34;&#34;Read neuron with the given name.
+
+        Parameters
+        ----------
+        name : str
+            Exact neuron name.
+
+        Returns
+        -------
+        navis.TreeNeuron
+        &#34;&#34;&#34;
+        d = self.name_to_id()
+        return self.get_by_id(d[name], read_spec)
+
+    def get_by_annotation(
+        self, annotation: str, read_spec: Optional[ReadSpec] = None
+    ) -&gt; Iterable[navis.TreeNeuron]:
+        &#34;&#34;&#34;Lazily iterate through neurons with the given annotation.
+
+        Parameters
+        ----------
+        annotation : str
+            Exact annotation.
+
+        Yields
+        ------
+        navis.TreeNeuron
+        &#34;&#34;&#34;
+        d = self.annotation_to_ids()
+        for skid in d[annotation]:
+            yield self.get_by_id(skid, read_spec)
+
+    def get_annotation_names(self) -&gt; set[str]:
+        &#34;&#34;&#34;Return all annotations represented in the dataset.
+
+        Returns
+        -------
+        set[str]
+            Set of annotation names.
+        &#34;&#34;&#34;
+        d = self.annotation_to_ids()
+        return set(d)
+
+    def get_annotation_graph(self) -&gt; nx.DiGraph:
+        &#34;&#34;&#34;Return graph of neuron annotations.
+
+        Returns
+        -------
+        nx.DiGraph
+            Edges are from annotations to neuron names.
+            All nodes have attribute ``&#34;type&#34;``,
+            which is either ``&#34;neuron&#34;`` or ``&#34;annotation&#34;``.
+            All edges have attribute ``&#34;meta_annotation&#34;=False``.
+        &#34;&#34;&#34;
+        g = nx.DiGraph()
+        anns = set()
+        neurons = set()
+        for dpath in self._iter_dirs():
+            meta = self._read_meta(dpath)
+            name = meta[&#34;name&#34;]
+            neurons.add(name)
+            for ann in meta[&#34;annotations&#34;]:
+                anns.add(ann)
+                g.add_edge(ann, name, meta_annotation=False)
+
+        ann_data = {&#34;type&#34;: &#34;annotation&#34;}
+        for ann in anns:
+            g.nodes[ann].update(ann_data)
+
+        return g
+
+    def get_all(
+        self, read_spec: Optional[ReadSpec] = None
+    ) -&gt; Iterable[navis.TreeNeuron]:
+        &#34;&#34;&#34;Lazily iterate through neurons in arbitrary order.
+
+        Can be used for filtering neurons based on some metadata, e.g.
+
+            lefts = []
+            for nrn in my_reader.get_all(ReadSpec(False, False, False)):
+                if &#34;left&#34; in nrn.name:
+                    lefts.append(my_reader.get_by_id(nrn.id)))
+
+        Yields
+        ------
+        navis.TreeNeuron
+        &#34;&#34;&#34;
+        for dpath in self._iter_dirs():
+            yield self._read_neuron(dpath, read_spec)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="catmaid_publish.SkeletonReader.annotation_to_ids"><code class="name flex">
+<span>def <span class="ident">annotation_to_ids</span></span>(<span>self) ‑> dict[str, list[int]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Which skeletons string annotations are applied to.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict[str, list[int]]</code></dt>
+<dd>Mapping from annotation name to list of skeleton IDs.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@lru_cache
+def annotation_to_ids(self) -&gt; dict[str, list[int]]:
+    &#34;&#34;&#34;Which skeletons string annotations are applied to.
+
+    Returns
+    -------
+    dict[str, list[int]]
+        Mapping from annotation name to list of skeleton IDs.
+    &#34;&#34;&#34;
+    out: dict[str, list[int]] = dict()
+
+    for dpath in self._iter_dirs():
+        meta = self._read_meta(dpath)
+        for ann in meta[&#34;annotations&#34;]:
+            out.setdefault(ann, []).append(meta[&#34;id&#34;])
+
+    return out</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.SkeletonReader.get_all"><code class="name flex">
+<span>def <span class="ident">get_all</span></span>(<span>self, read_spec: Optional[<a title="catmaid_publish.skeletons.ReadSpec" href="skeletons.html#catmaid_publish.skeletons.ReadSpec">ReadSpec</a>] = None) ‑> collections.abc.Iterable[navis.core.skeleton.TreeNeuron]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lazily iterate through neurons in arbitrary order.</p>
+<p>Can be used for filtering neurons based on some metadata, e.g.</p>
+<pre><code>lefts = []
+for nrn in my_reader.get_all(ReadSpec(False, False, False)):
+    if "left" in nrn.name:
+        lefts.append(my_reader.get_by_id(nrn.id)))
+</code></pre>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code>navis.TreeNeuron</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_all(
+    self, read_spec: Optional[ReadSpec] = None
+) -&gt; Iterable[navis.TreeNeuron]:
+    &#34;&#34;&#34;Lazily iterate through neurons in arbitrary order.
+
+    Can be used for filtering neurons based on some metadata, e.g.
+
+        lefts = []
+        for nrn in my_reader.get_all(ReadSpec(False, False, False)):
+            if &#34;left&#34; in nrn.name:
+                lefts.append(my_reader.get_by_id(nrn.id)))
+
+    Yields
+    ------
+    navis.TreeNeuron
+    &#34;&#34;&#34;
+    for dpath in self._iter_dirs():
+        yield self._read_neuron(dpath, read_spec)</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.SkeletonReader.get_annotation_graph"><code class="name flex">
+<span>def <span class="ident">get_annotation_graph</span></span>(<span>self) ‑> networkx.classes.digraph.DiGraph</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return graph of neuron annotations.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>nx.DiGraph</code></dt>
+<dd>Edges are from annotations to neuron names.
+All nodes have attribute <code>"type"</code>,
+which is either <code>"neuron"</code> or <code>"annotation"</code>.
+All edges have attribute <code>"meta_annotation"=False</code>.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_annotation_graph(self) -&gt; nx.DiGraph:
+    &#34;&#34;&#34;Return graph of neuron annotations.
+
+    Returns
+    -------
+    nx.DiGraph
+        Edges are from annotations to neuron names.
+        All nodes have attribute ``&#34;type&#34;``,
+        which is either ``&#34;neuron&#34;`` or ``&#34;annotation&#34;``.
+        All edges have attribute ``&#34;meta_annotation&#34;=False``.
+    &#34;&#34;&#34;
+    g = nx.DiGraph()
+    anns = set()
+    neurons = set()
+    for dpath in self._iter_dirs():
+        meta = self._read_meta(dpath)
+        name = meta[&#34;name&#34;]
+        neurons.add(name)
+        for ann in meta[&#34;annotations&#34;]:
+            anns.add(ann)
+            g.add_edge(ann, name, meta_annotation=False)
+
+    ann_data = {&#34;type&#34;: &#34;annotation&#34;}
+    for ann in anns:
+        g.nodes[ann].update(ann_data)
+
+    return g</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.SkeletonReader.get_annotation_names"><code class="name flex">
+<span>def <span class="ident">get_annotation_names</span></span>(<span>self) ‑> set[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return all annotations represented in the dataset.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>set[str]</code></dt>
+<dd>Set of annotation names.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_annotation_names(self) -&gt; set[str]:
+    &#34;&#34;&#34;Return all annotations represented in the dataset.
+
+    Returns
+    -------
+    set[str]
+        Set of annotation names.
+    &#34;&#34;&#34;
+    d = self.annotation_to_ids()
+    return set(d)</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.SkeletonReader.get_by_annotation"><code class="name flex">
+<span>def <span class="ident">get_by_annotation</span></span>(<span>self, annotation: str, read_spec: Optional[<a title="catmaid_publish.skeletons.ReadSpec" href="skeletons.html#catmaid_publish.skeletons.ReadSpec">ReadSpec</a>] = None) ‑> collections.abc.Iterable[navis.core.skeleton.TreeNeuron]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lazily iterate through neurons with the given annotation.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>annotation</code></strong> :&ensp;<code>str</code></dt>
+<dd>Exact annotation.</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code>navis.TreeNeuron</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_by_annotation(
+    self, annotation: str, read_spec: Optional[ReadSpec] = None
+) -&gt; Iterable[navis.TreeNeuron]:
+    &#34;&#34;&#34;Lazily iterate through neurons with the given annotation.
+
+    Parameters
+    ----------
+    annotation : str
+        Exact annotation.
+
+    Yields
+    ------
+    navis.TreeNeuron
+    &#34;&#34;&#34;
+    d = self.annotation_to_ids()
+    for skid in d[annotation]:
+        yield self.get_by_id(skid, read_spec)</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.SkeletonReader.get_by_id"><code class="name flex">
+<span>def <span class="ident">get_by_id</span></span>(<span>self, skeleton_id: int, read_spec: Optional[<a title="catmaid_publish.skeletons.ReadSpec" href="skeletons.html#catmaid_publish.skeletons.ReadSpec">ReadSpec</a>] = None) ‑> navis.core.skeleton.TreeNeuron</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read neuron with the given skeleton ID.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>skeleton_id</code></strong> :&ensp;<code>int</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>navis.TreeNeuron</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_by_id(
+    self, skeleton_id: int, read_spec: Optional[ReadSpec] = None
+) -&gt; navis.TreeNeuron:
+    &#34;&#34;&#34;Read neuron with the given skeleton ID.
+
+    Parameters
+    ----------
+    skeleton_id : int
+
+    Returns
+    -------
+    navis.TreeNeuron
+    &#34;&#34;&#34;
+    return self._read_neuron(self.dpath / str(skeleton_id), read_spec)</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.SkeletonReader.get_by_name"><code class="name flex">
+<span>def <span class="ident">get_by_name</span></span>(<span>self, name: str, read_spec: Optional[<a title="catmaid_publish.skeletons.ReadSpec" href="skeletons.html#catmaid_publish.skeletons.ReadSpec">ReadSpec</a>] = None) ‑> navis.core.skeleton.TreeNeuron</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read neuron with the given name.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Exact neuron name.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>navis.TreeNeuron</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_by_name(
+    self, name: str, read_spec: Optional[ReadSpec] = None
+) -&gt; navis.TreeNeuron:
+    &#34;&#34;&#34;Read neuron with the given name.
+
+    Parameters
+    ----------
+    name : str
+        Exact neuron name.
+
+    Returns
+    -------
+    navis.TreeNeuron
+    &#34;&#34;&#34;
+    d = self.name_to_id()
+    return self.get_by_id(d[name], read_spec)</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.SkeletonReader.name_to_id"><code class="name flex">
+<span>def <span class="ident">name_to_id</span></span>(<span>self) ‑> dict[str, int]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Mapping from neuron name to skeleton ID.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict[str, int]</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@lru_cache
+def name_to_id(self) -&gt; dict[str, int]:
+    &#34;&#34;&#34;Mapping from neuron name to skeleton ID.
+
+    Returns
+    -------
+    dict[str, int]
+    &#34;&#34;&#34;
+    out = dict()
+
+    for dpath in self._iter_dirs():
+        meta = self._read_meta(dpath)
+        out[meta[&#34;name&#34;]] = meta[&#34;id&#34;]
+
+    return out</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.SkeletonReader.parse_read_spec"><code class="name flex">
+<span>def <span class="ident">parse_read_spec</span></span>(<span>self, read_spec: Optional[Sequence[bool]] = None) ‑> <a title="catmaid_publish.skeletons.ReadSpec" href="skeletons.html#catmaid_publish.skeletons.ReadSpec">ReadSpec</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_read_spec(self, read_spec: Optional[Sequence[bool]] = None) -&gt; ReadSpec:
+    if read_spec is None:
+        read_spec = self.default_read_spec
+    else:
+        read_spec = ReadSpec(*read_spec)
+    return read_spec</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="catmaid_publish.VolumeReader"><code class="flex name class">
+<span>class <span class="ident">VolumeReader</span></span>
+<span>(</span><span>dpath: pathlib.Path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class for reading exported volume data.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dpath</code></strong> :&ensp;<code>Path</code></dt>
+<dd>Path to directory in which the volume data is saved.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VolumeReader:
+    &#34;&#34;&#34;Class for reading exported volume data.&#34;&#34;&#34;
+
+    def __init__(self, dpath: Path) -&gt; None:
+        &#34;&#34;&#34;
+        Parameters
+        ----------
+        dpath : Path
+            Path to directory in which the volume data is saved.
+        &#34;&#34;&#34;
+        self.dpath = dpath
+        self._names_df = None
+
+    @property
+    def names_df(self) -&gt; pd.DataFrame:
+        &#34;&#34;&#34;Dataframe representing ``names.tsv``.
+
+        Returns
+        -------
+        pd.DataFrame
+            Columns ``filename``, ``volume_name``
+        &#34;&#34;&#34;
+        if self._names_df is None:
+            self._names_df = pd.read_csv(
+                self.dpath / &#34;names.tsv&#34;,
+                sep=&#34;\t&#34;,
+            )
+        return self._names_df
+
+    @lru_cache
+    def _dict(self, keys, values):
+        return df_to_dict(self.names_df, keys, values)
+
+    @copy_cache(maxsize=None)
+    def _get_annotations(self) -&gt; dict[str, set[str]]:
+        &#34;&#34;&#34;Map annotation names to volume names.
+
+        Returns
+        -------
+        dict[str, set[str]]
+        &#34;&#34;&#34;
+        d = json.loads((self.dpath / &#34;annotations.json&#34;).read_text())
+        return {k: set(v) for k, v in d.items()}
+
+    def get_annotation_graph(self) -&gt; nx.DiGraph:
+        &#34;&#34;&#34;Get graph of annotations to volumes.
+
+        Returns
+        -------
+        networkx.DiGraph
+        &#34;&#34;&#34;
+        g = nx.DiGraph()
+        for k, vs in self._get_annotations().items():
+            g.add_node(k, type=&#34;annotation&#34;)
+            for v in vs:
+                if v not in g.nodes:
+                    g.add_node(v, type=&#34;volume&#34;)
+                g.add_edge(k, v, meta_annotation=False)
+        return g
+
+    def _annotations_for_volume(self, name: str):
+        d = self._get_annotations()
+        return {a for a, names in d.items() if name in names}
+
+    @copy_cache(maxsize=CACHE_SIZE)
+    def _read_vol(
+        self, fpath: Path, name: Optional[str], volume_id: Optional[int]
+    ) -&gt; AnnotatedVolume:
+        vol = AnnotatedVolume.from_file(fpath)
+        if name is not None:
+            d = self._dict(&#34;filename&#34;, &#34;volume_name&#34;)
+            name = d[fpath.name]
+        vol.name = name
+
+        vol.annotations.update(self._annotations_for_volume(name))
+
+        if volume_id is None:
+            volume_id = int(fpath.stem)
+
+        vol.id = volume_id
+        return vol
+
+    def get_by_id(self, volume_id: int) -&gt; AnnotatedVolume:
+        &#34;&#34;&#34;Read a volume with a given (arbitrary) ID.
+
+        Parameters
+        ----------
+        volume_id : int
+
+        Returns
+        -------
+        AnnotatedVolume
+        &#34;&#34;&#34;
+        return self._read_vol(
+            self.dpath / f&#34;{volume_id}.stl&#34;,
+            None,
+            volume_id,
+        )
+
+    def get_by_name(self, volume_name: str) -&gt; AnnotatedVolume:
+        &#34;&#34;&#34;Read a volume with a given name.
+
+        Parameters
+        ----------
+        volume_name : str
+
+        Returns
+        -------
+        AnnotatedVolume
+        &#34;&#34;&#34;
+        d = self._dict(&#34;volume_name&#34;, &#34;filename&#34;)
+        fname = d[volume_name]
+        path = self.dpath / fname
+        return self._read_vol(path, volume_name, None)
+
+    def get_by_annotation(self, annotation: str) -&gt; Iterable[AnnotatedVolume]:
+        &#34;&#34;&#34;Lazily iterate through all volumes with the given annotation.
+
+        Parameters
+        ----------
+        annotation : str
+            Annotation name.
+
+        Yields
+        ------
+        Iterable[AnnotatedVolume]
+        &#34;&#34;&#34;
+        d = self._get_annotations()
+        for vol_name in d[annotation]:
+            yield self.get_by_name(vol_name)
+
+    def get_all(self) -&gt; Iterable[AnnotatedVolume]:
+        &#34;&#34;&#34;Lazily iterate through all available volumes.
+
+        Iteration is in the order used by ``names.tsv``.
+
+        Yields
+        ------
+        AnnotatedVolume
+        &#34;&#34;&#34;
+        for fname, name in self._dict(&#34;filename&#34;, &#34;volume_name&#34;).items():
+            fpath = self.dpath / fname
+            yield self._read_vol(fpath, name, None)</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="catmaid_publish.VolumeReader.names_df"><code class="name">var <span class="ident">names_df</span> : pandas.core.frame.DataFrame</code></dt>
+<dd>
+<div class="desc"><p>Dataframe representing <code>names.tsv</code>.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pd.DataFrame</code></dt>
+<dd>Columns <code>filename</code>, <code>volume_name</code></dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def names_df(self) -&gt; pd.DataFrame:
+    &#34;&#34;&#34;Dataframe representing ``names.tsv``.
+
+    Returns
+    -------
+    pd.DataFrame
+        Columns ``filename``, ``volume_name``
+    &#34;&#34;&#34;
+    if self._names_df is None:
+        self._names_df = pd.read_csv(
+            self.dpath / &#34;names.tsv&#34;,
+            sep=&#34;\t&#34;,
+        )
+    return self._names_df</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="catmaid_publish.VolumeReader.get_all"><code class="name flex">
+<span>def <span class="ident">get_all</span></span>(<span>self) ‑> Iterable[<a title="catmaid_publish.volumes.AnnotatedVolume" href="volumes.html#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lazily iterate through all available volumes.</p>
+<p>Iteration is in the order used by <code>names.tsv</code>.</p>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code><a title="catmaid_publish.AnnotatedVolume" href="#catmaid_publish.AnnotatedVolume">AnnotatedVolume</a></code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_all(self) -&gt; Iterable[AnnotatedVolume]:
+    &#34;&#34;&#34;Lazily iterate through all available volumes.
+
+    Iteration is in the order used by ``names.tsv``.
+
+    Yields
+    ------
+    AnnotatedVolume
+    &#34;&#34;&#34;
+    for fname, name in self._dict(&#34;filename&#34;, &#34;volume_name&#34;).items():
+        fpath = self.dpath / fname
+        yield self._read_vol(fpath, name, None)</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.VolumeReader.get_annotation_graph"><code class="name flex">
+<span>def <span class="ident">get_annotation_graph</span></span>(<span>self) ‑> networkx.classes.digraph.DiGraph</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get graph of annotations to volumes.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>networkx.DiGraph</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_annotation_graph(self) -&gt; nx.DiGraph:
+    &#34;&#34;&#34;Get graph of annotations to volumes.
+
+    Returns
+    -------
+    networkx.DiGraph
+    &#34;&#34;&#34;
+    g = nx.DiGraph()
+    for k, vs in self._get_annotations().items():
+        g.add_node(k, type=&#34;annotation&#34;)
+        for v in vs:
+            if v not in g.nodes:
+                g.add_node(v, type=&#34;volume&#34;)
+            g.add_edge(k, v, meta_annotation=False)
+    return g</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.VolumeReader.get_by_annotation"><code class="name flex">
+<span>def <span class="ident">get_by_annotation</span></span>(<span>self, annotation: str) ‑> Iterable[<a title="catmaid_publish.volumes.AnnotatedVolume" href="volumes.html#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lazily iterate through all volumes with the given annotation.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>annotation</code></strong> :&ensp;<code>str</code></dt>
+<dd>Annotation name.</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code>Iterable[<a title="catmaid_publish.AnnotatedVolume" href="#catmaid_publish.AnnotatedVolume">AnnotatedVolume</a>]</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_by_annotation(self, annotation: str) -&gt; Iterable[AnnotatedVolume]:
+    &#34;&#34;&#34;Lazily iterate through all volumes with the given annotation.
+
+    Parameters
+    ----------
+    annotation : str
+        Annotation name.
+
+    Yields
+    ------
+    Iterable[AnnotatedVolume]
+    &#34;&#34;&#34;
+    d = self._get_annotations()
+    for vol_name in d[annotation]:
+        yield self.get_by_name(vol_name)</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.VolumeReader.get_by_id"><code class="name flex">
+<span>def <span class="ident">get_by_id</span></span>(<span>self, volume_id: int) ‑> <a title="catmaid_publish.volumes.AnnotatedVolume" href="volumes.html#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read a volume with a given (arbitrary) ID.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>volume_id</code></strong> :&ensp;<code>int</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="catmaid_publish.AnnotatedVolume" href="#catmaid_publish.AnnotatedVolume">AnnotatedVolume</a></code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_by_id(self, volume_id: int) -&gt; AnnotatedVolume:
+    &#34;&#34;&#34;Read a volume with a given (arbitrary) ID.
+
+    Parameters
+    ----------
+    volume_id : int
+
+    Returns
+    -------
+    AnnotatedVolume
+    &#34;&#34;&#34;
+    return self._read_vol(
+        self.dpath / f&#34;{volume_id}.stl&#34;,
+        None,
+        volume_id,
+    )</code></pre>
+</details>
+</dd>
+<dt id="catmaid_publish.VolumeReader.get_by_name"><code class="name flex">
+<span>def <span class="ident">get_by_name</span></span>(<span>self, volume_name: str) ‑> <a title="catmaid_publish.volumes.AnnotatedVolume" href="volumes.html#catmaid_publish.volumes.AnnotatedVolume">AnnotatedVolume</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read a volume with a given name.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>volume_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="catmaid_publish.AnnotatedVolume" href="#catmaid_publish.AnnotatedVolume">AnnotatedVolume</a></code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_by_name(self, volume_name: str) -&gt; AnnotatedVolume:
+    &#34;&#34;&#34;Read a volume with a given name.
+
+    Parameters
+    ----------
+    volume_name : str
+
+    Returns
+    -------
+    AnnotatedVolume
+    &#34;&#34;&#34;
+    d = self._dict(&#34;volume_name&#34;, &#34;filename&#34;)
+    fname = d[volume_name]
+    path = self.dpath / fname
+    return self._read_vol(path, volume_name, None)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul>
+<li><a href="#catmaid_publish">catmaid_publish</a><ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#usage">Usage</a><ul>
+<li><a href="#catmaid_publish_init">catmaid_publish_init</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#authentication">Authentication</a></li>
+<li><a href="#catmaid_publish_1">catmaid_publish</a></li>
+<li><a href="#output">Output</a><ul>
+<li><a href="#reading">Reading</a></li>
+</ul>
+</li>
+<li><a href="#tips">Tips</a><ul>
+<li><a href="#publication">Publication</a></li>
+<li><a href="#analysis-snapshot">Analysis snapshot</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#containerisation">Containerisation</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="catmaid_publish.annotations" href="annotations.html">catmaid_publish.annotations</a></code></li>
+<li><code><a title="catmaid_publish.constants" href="constants.html">catmaid_publish.constants</a></code></li>
+<li><code><a title="catmaid_publish.initialise" href="initialise.html">catmaid_publish.initialise</a></code></li>
+<li><code><a title="catmaid_publish.io_helpers" href="io_helpers.html">catmaid_publish.io_helpers</a></code></li>
+<li><code><a title="catmaid_publish.landmarks" href="landmarks.html">catmaid_publish.landmarks</a></code></li>
+<li><code><a title="catmaid_publish.main" href="main.html">catmaid_publish.main</a></code></li>
+<li><code><a title="catmaid_publish.reader" href="reader.html">catmaid_publish.reader</a></code></li>
+<li><code><a title="catmaid_publish.skeletons" href="skeletons.html">catmaid_publish.skeletons</a></code></li>
+<li><code><a title="catmaid_publish.utils" href="utils.html">catmaid_publish.utils</a></code></li>
+<li><code><a title="catmaid_publish.version" href="version.html">catmaid_publish.version</a></code></li>
+<li><code><a title="catmaid_publish.volumes" href="volumes.html">catmaid_publish.volumes</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="catmaid_publish.hash_toml" href="#catmaid_publish.hash_toml">hash_toml</a></code></li>
+<li><code><a title="catmaid_publish.publish_from_config" href="#catmaid_publish.publish_from_config">publish_from_config</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="catmaid_publish.AnnotatedVolume" href="#catmaid_publish.AnnotatedVolume">AnnotatedVolume</a></code></h4>
+</li>
+<li>
+<h4><code><a title="catmaid_publish.AnnotationReader" href="#catmaid_publish.AnnotationReader">AnnotationReader</a></code></h4>
+<ul class="">
+<li><code><a title="catmaid_publish.AnnotationReader.get_graph" href="#catmaid_publish.AnnotationReader.get_graph">get_graph</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="catmaid_publish.DataReader" href="#catmaid_publish.DataReader">DataReader</a></code></h4>
+<ul class="">
+<li><code><a title="catmaid_publish.DataReader.get_full_annotation_graph" href="#catmaid_publish.DataReader.get_full_annotation_graph">get_full_annotation_graph</a></code></li>
+<li><code><a title="catmaid_publish.DataReader.get_metadata" href="#catmaid_publish.DataReader.get_metadata">get_metadata</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="catmaid_publish.LandmarkReader" href="#catmaid_publish.LandmarkReader">LandmarkReader</a></code></h4>
+<ul class="">
+<li><code><a title="catmaid_publish.LandmarkReader.get_all" href="#catmaid_publish.LandmarkReader.get_all">get_all</a></code></li>
+<li><code><a title="catmaid_publish.LandmarkReader.get_group" href="#catmaid_publish.LandmarkReader.get_group">get_group</a></code></li>
+<li><code><a title="catmaid_publish.LandmarkReader.get_group_names" href="#catmaid_publish.LandmarkReader.get_group_names">get_group_names</a></code></li>
+<li><code><a title="catmaid_publish.LandmarkReader.get_landmark" href="#catmaid_publish.LandmarkReader.get_landmark">get_landmark</a></code></li>
+<li><code><a title="catmaid_publish.LandmarkReader.get_landmark_names" href="#catmaid_publish.LandmarkReader.get_landmark_names">get_landmark_names</a></code></li>
+<li><code><a title="catmaid_publish.LandmarkReader.get_paired_locations" href="#catmaid_publish.LandmarkReader.get_paired_locations">get_paired_locations</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="catmaid_publish.Location" href="#catmaid_publish.Location">Location</a></code></h4>
+<ul class="">
+<li><code><a title="catmaid_publish.Location.from_jso" href="#catmaid_publish.Location.from_jso">from_jso</a></code></li>
+<li><code><a title="catmaid_publish.Location.groups" href="#catmaid_publish.Location.groups">groups</a></code></li>
+<li><code><a title="catmaid_publish.Location.landmarks" href="#catmaid_publish.Location.landmarks">landmarks</a></code></li>
+<li><code><a title="catmaid_publish.Location.to_jso" href="#catmaid_publish.Location.to_jso">to_jso</a></code></li>
+<li><code><a title="catmaid_publish.Location.xyz" href="#catmaid_publish.Location.xyz">xyz</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="catmaid_publish.ReadSpec" href="#catmaid_publish.ReadSpec">ReadSpec</a></code></h4>
+<ul class="">
+<li><code><a title="catmaid_publish.ReadSpec.connectors" href="#catmaid_publish.ReadSpec.connectors">connectors</a></code></li>
+<li><code><a title="catmaid_publish.ReadSpec.copy" href="#catmaid_publish.ReadSpec.copy">copy</a></code></li>
+<li><code><a title="catmaid_publish.ReadSpec.nodes" href="#catmaid_publish.ReadSpec.nodes">nodes</a></code></li>
+<li><code><a title="catmaid_publish.ReadSpec.tags" href="#catmaid_publish.ReadSpec.tags">tags</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="catmaid_publish.SkeletonReader" href="#catmaid_publish.SkeletonReader">SkeletonReader</a></code></h4>
+<ul class="">
+<li><code><a title="catmaid_publish.SkeletonReader.annotation_to_ids" href="#catmaid_publish.SkeletonReader.annotation_to_ids">annotation_to_ids</a></code></li>
+<li><code><a title="catmaid_publish.SkeletonReader.get_all" href="#catmaid_publish.SkeletonReader.get_all">get_all</a></code></li>
+<li><code><a title="catmaid_publish.SkeletonReader.get_annotation_graph" href="#catmaid_publish.SkeletonReader.get_annotation_graph">get_annotation_graph</a></code></li>
+<li><code><a title="catmaid_publish.SkeletonReader.get_annotation_names" href="#catmaid_publish.SkeletonReader.get_annotation_names">get_annotation_names</a></code></li>
+<li><code><a title="catmaid_publish.SkeletonReader.get_by_annotation" href="#catmaid_publish.SkeletonReader.get_by_annotation">get_by_annotation</a></code></li>
+<li><code><a title="catmaid_publish.SkeletonReader.get_by_id" href="#catmaid_publish.SkeletonReader.get_by_id">get_by_id</a></code></li>
+<li><code><a title="catmaid_publish.SkeletonReader.get_by_name" href="#catmaid_publish.SkeletonReader.get_by_name">get_by_name</a></code></li>
+<li><code><a title="catmaid_publish.SkeletonReader.name_to_id" href="#catmaid_publish.SkeletonReader.name_to_id">name_to_id</a></code></li>
+<li><code><a title="catmaid_publish.SkeletonReader.parse_read_spec" href="#catmaid_publish.SkeletonReader.parse_read_spec">parse_read_spec</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="catmaid_publish.VolumeReader" href="#catmaid_publish.VolumeReader">VolumeReader</a></code></h4>
+<ul class="">
+<li><code><a title="catmaid_publish.VolumeReader.get_all" href="#catmaid_publish.VolumeReader.get_all">get_all</a></code></li>
+<li><code><a title="catmaid_publish.VolumeReader.get_annotation_graph" href="#catmaid_publish.VolumeReader.get_annotation_graph">get_annotation_graph</a></code></li>
+<li><code><a title="catmaid_publish.VolumeReader.get_by_annotation" href="#catmaid_publish.VolumeReader.get_by_annotation">get_by_annotation</a></code></li>
+<li><code><a title="catmaid_publish.VolumeReader.get_by_id" href="#catmaid_publish.VolumeReader.get_by_id">get_by_id</a></code></li>
+<li><code><a title="catmaid_publish.VolumeReader.get_by_name" href="#catmaid_publish.VolumeReader.get_by_name">get_by_name</a></code></li>
+<li><code><a title="catmaid_publish.VolumeReader.names_df" href="#catmaid_publish.VolumeReader.names_df">names_df</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
